@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chex — Project Scope</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --muted: #555;
+      --accent: #1d4ed8;
+      --accent-light: #eff6ff;
+      --border: #e5e7eb;
+      --card-bg: #f9fafb;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      padding: 16px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      padding: 32px 0 24px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--accent);
+    }
+
+    header p.tagline {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    header .meta {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 36px 0 12px;
+      color: var(--text);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 24px 0 8px;
+      color: var(--text);
+    }
+
+    p, li { font-size: 1rem; }
+    p { margin-bottom: 12px; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    .card.accent {
+      background: var(--accent-light);
+      border-color: var(--accent);
+    }
+
+    .card.green {
+      background: var(--green-bg);
+      border-color: var(--green);
+    }
+
+    .card.amber {
+      background: var(--amber-bg);
+      border-color: var(--amber);
+    }
+
+    .card.red {
+      background: var(--red-bg);
+      border-color: var(--red);
+    }
+
+    .card h3 { margin-top: 0; }
+
+    ul, ol {
+      margin: 8px 0 12px 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .form-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+
+    .form-box h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .form-box p {
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-right: 4px;
+    }
+
+    .badge.blue { background: var(--accent-light); color: var(--accent); }
+    .badge.green { background: var(--green-bg); color: var(--green); }
+    .badge.amber { background: var(--amber-bg); color: var(--amber); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--card-bg);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--muted);
+    }
+
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 16px 0;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .flow-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 32px;
+    }
+
+    .flow-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .flow-connector {
+      width: 2px;
+      height: 24px;
+      background: var(--border);
+    }
+
+    .flow-content {
+      padding: 4px 0 20px;
+    }
+
+    .flow-content strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .flow-content p {
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+
+    .approval-box {
+      background: white;
+      border: 2px dashed var(--accent);
+      border-radius: 10px;
+      padding: 24px;
+      margin: 32px 0;
+      text-align: center;
+    }
+
+    .approval-box h3 {
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 12px; }
+      header h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.2rem; }
+      table { font-size: 0.85rem; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Chex</h1>
+  <p class="tagline">Digital plant &amp; vehicle check tracking for tradesmen</p>
+  <div class="meta">
+    Scoping Document &middot; v1.0 &middot; 3 April 2026<br>
+    Status: <strong>Awaiting Client Approval</strong>
+  </div>
+</header>
+
+<!-- ============================================ -->
+<h2>The Problem Today</h2>
+
+<p>
+  Right now, your teams fill in <strong>three separate paper forms</strong> every week by hand. These track the condition of vehicles, trailers, and plant equipment across your sites. The forms are:
+</p>
+
+<div class="form-box">
+  <h4>1. Vehicle &amp; Trailer Inspection Record</h4>
+  <p><span class="badge blue">MGroup Services format</span></p>
+  <p>A weekly grid where drivers tick off 15 daily checks on their vehicle (oil, tyres, mirrors, lights, brakes, etc.) plus another 15 checks on any attached trailer (towing cable, breakaway cables, wheel nuts, securing straps, etc.). Includes a defects section and sign-off.</p>
+</div>
+
+<div class="form-box">
+  <h4>2. Weekly PUWER Inspection Report</h4>
+  <p><span class="badge blue">SAW Ltd format</span></p>
+  <p>Tracks all plant and equipment on site — diggers, dumpers, generators, breakers, saws, work lights, etc. Records the supplier, the Plant ID number, daily pass/fail checks (Mon–Sun), any defects found and actions taken, calibration dates, and who checked it.</p>
+</div>
+
+<div class="form-box">
+  <h4>3. Vehicle Daily Check Sheet</h4>
+  <p><span class="badge blue">General fleet format</span></p>
+  <p>The most detailed vehicle form — covers general roadworthiness (fuel/oil/water, battery, tyres, windscreen, washers, mirrors, lights, body damage), plus sections for vehicles over 7.5T (tachograph, plateing certificate, speed limiter, crane operation) and towing/lifting equipment. Includes mileage tracking, defect reporting, and driver/agent sign-off.</p>
+</div>
+
+<div class="card red">
+  <h3>What goes wrong with paper</h3>
+  <ul>
+    <li><strong>Forms get lost, damaged, or left in vans</strong> — nobody back at the office knows the true status of kit on site.</li>
+    <li><strong>Handwriting is hard to read</strong> — serial numbers, Plant IDs, and defect notes get misread or missed entirely.</li>
+    <li><strong>No single view</strong> — to see the status of all your plant, someone has to physically collect and collate three different paper sheets per site, per week.</li>
+    <li><strong>Compliance risk</strong> — if an inspector asks for records, you're rummaging through filing cabinets. Missing or incomplete forms are a liability.</li>
+    <li><strong>Duplicate effort</strong> — some information (vehicle reg, site name, operator name) is written out on every form, every week.</li>
+  </ul>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<h2>The Proposed Solution</h2>
+
+<p>
+  Chex is a web app that replaces all three paper forms with a single digital tool. It runs on any phone, tablet, or laptop — no app store download needed. Here's what it does:
+</p>
+
+<div class="card green">
+  <h3>One app, three forms, zero paper</h3>
+  <p>Each of the three paper forms becomes a digital checklist inside Chex. Your teams open the app on their phone, pick the check they need to do, and tap through it. Everything is saved instantly.</p>
+</div>
+
+<h3>How a typical day works</h3>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot">1</div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-content">
+      <strong>Scan the QR code</strong>
+      <p>Every vehicle, trailer, and piece of plant gets a QR code sticker. The operator scans it with their phone camera to pull up that item instantly — no typing serial numbers.</p>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot">2</div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-content">
+      <strong>Run through the checklist</strong>
+      <p>The app shows the right checklist for that item (vehicle checks, trailer checks, or plant/PUWER checks). Tap pass, fail, or N/A for each item. It takes a fraction of the time compared to writing it all out.</p>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot">3</div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-content">
+      <strong>Snap a photo if there's a defect</strong>
+      <p>Found damage? Take a photo straight from the app. It's attached to the record automatically — no need to describe dents and scratches in words.</p>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot">4</div>
+      <div class="flow-connector"></div>
+    </div>
+    <div class="flow-content">
+      <strong>Sign off digitally</strong>
+      <p>The operator confirms with a digital signature. The record is timestamped and stored securely.</p>
+    </div>
+  </div>
+
+  <div class="flow-step">
+    <div class="flow-line">
+      <div class="flow-dot">5</div>
+    </div>
+    <div class="flow-content">
+      <strong>Office sees everything in real time</strong>
+      <p>Back at the office, managers can see the status of every vehicle and piece of plant across all sites — live, in one place. No waiting for paper to come back.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<h2>Key Features</h2>
+
+<div class="card">
+  <h3>📋 Digital Checklists</h3>
+  <p>All three paper forms rebuilt as tap-through checklists. Each item on the form becomes a pass/fail/N/A button. Defect notes can be typed or spoken. Covers:</p>
+  <ul>
+    <li>Vehicle daily safety inspection (15 items + defects)</li>
+    <li>Trailer daily safety inspection (15 items + defects)</li>
+    <li>PUWER weekly plant inspection (per item, with supplier and Plant ID)</li>
+    <li>Vehicle roadworthiness check (general, 7.5T+, towing/lifting)</li>
+    <li>Mileage tracking (start/end of week)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>📷 QR Codes &amp; Camera</h3>
+  <ul>
+    <li><strong>QR code scanning</strong> — scan a sticker on any piece of kit to instantly pull up its record and start a check.</li>
+    <li><strong>QR code generation</strong> — the app creates printable QR stickers for new vehicles/plant.</li>
+    <li><strong>Photo capture</strong> — take photos of damage, defects, or anything that needs recording. Photos are attached to the check record.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>📊 Live Dashboard</h3>
+  <ul>
+    <li>See all vehicles, trailers, and plant in one place.</li>
+    <li>Filter by site, by date, by status (passed / has defects / overdue).</li>
+    <li>Spot equipment with overdue checks or unresolved defects at a glance.</li>
+    <li>Track calibration/test dates and get reminders before they're due.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>📄 PDF Extracts</h3>
+  <p>Need to produce the original paper forms for compliance, audits, or client requests? Chex generates PDF versions that match the familiar layouts — filled in with all the recorded data. Print them or email them.</p>
+</div>
+
+<div class="card">
+  <h3>🔌 API for Back-Office Integration</h3>
+  <p>An open API so Chex data can flow into your existing systems — accounting, fleet management, hire-desk software, or merchant back-ends. No double-entry.</p>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<h2>What Gets Tracked</h2>
+
+<p>Every item in Chex has a record that holds:</p>
+
+<table>
+  <tr><th>Field</th><th>What it is</th></tr>
+  <tr><td>Item type</td><td>Vehicle, Trailer, or Plant</td></tr>
+  <tr><td>Description</td><td>e.g. "Digger", "CAT", "Stihl Saw", "Ford Transit"</td></tr>
+  <tr><td>Plant / Asset ID</td><td>Your internal reference number</td></tr>
+  <tr><td>Serial number</td><td>Manufacturer serial</td></tr>
+  <tr><td>Registration</td><td>Vehicle reg (if applicable)</td></tr>
+  <tr><td>Supplier</td><td>Where it's hired from (GAP, Speedy, etc.)</td></tr>
+  <tr><td>Site</td><td>Which job site it's currently at</td></tr>
+  <tr><td>QR code</td><td>Unique code linked to this item</td></tr>
+  <tr><td>Calibration due</td><td>Next calibration/test date</td></tr>
+  <tr><td>Check history</td><td>Every inspection ever done, with photos</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<h2>Who Uses It</h2>
+
+<table>
+  <tr><th>Role</th><th>What they do in Chex</th></tr>
+  <tr><td><strong>Operator / Driver</strong></td><td>Scans QR codes, fills in daily/weekly checks on their phone, snaps photos of defects, signs off.</td></tr>
+  <tr><td><strong>Site Supervisor</strong></td><td>Reviews checks for their site, follows up on defects, assigns plant to jobs.</td></tr>
+  <tr><td><strong>Office / Fleet Manager</strong></td><td>Views the dashboard across all sites, exports PDFs for compliance, manages the asset register, sets up new items and QR codes.</td></tr>
+  <tr><td><strong>External systems</strong></td><td>Pull data via the API — hire-desk software, accounting, merchant systems.</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<h2>Build Phases</h2>
+
+<p>We'd build this in stages so you can start using it quickly and give feedback as we go:</p>
+
+<div class="card">
+  <h3>Phase 1 — Core checks &amp; QR scanning</h3>
+  <p><span class="badge green">Start here</span></p>
+  <ul>
+    <li>Asset register (add vehicles, trailers, plant with all their details)</li>
+    <li>QR code generation and scanning</li>
+    <li>Digital versions of all three checklist forms</li>
+    <li>Photo capture for defects</li>
+    <li>Digital sign-off</li>
+    <li>Basic dashboard — see all items, filter by site and status</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Phase 2 — PDF extracts &amp; reporting</h3>
+  <p><span class="badge amber">After Phase 1 is live</span></p>
+  <ul>
+    <li>Generate PDF versions of each form, filled in with recorded data</li>
+    <li>Weekly summary reports per site</li>
+    <li>Defect follow-up tracking (open → resolved)</li>
+    <li>Calibration date reminders</li>
+    <li>Check history and audit trail</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Phase 3 — API &amp; integrations</h3>
+  <p><span class="badge amber">After Phase 2</span></p>
+  <ul>
+    <li>REST API for reading asset data, check records, and defect status</li>
+    <li>Webhook notifications (e.g. alert when a defect is logged)</li>
+    <li>Integration guides for merchant and hire-desk systems</li>
+    <li>API key management for third-party access</li>
+  </ul>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<h2>Technical Approach</h2>
+
+<p>Keeping this brief — the detail matters less than the outcome, but for the record:</p>
+
+<div class="card">
+  <ul>
+    <li><strong>Web app</strong> — works in any browser, no app store needed. Can be saved to the home screen on a phone so it looks and feels like a native app.</li>
+    <li><strong>Camera access</strong> — uses the phone's built-in camera for QR scanning and photos. No extra hardware.</li>
+    <li><strong>Works offline</strong> — checks can be started even with poor signal on site. Data syncs when connection is restored.</li>
+    <li><strong>Secure</strong> — data is encrypted, users log in with their own account, and access is controlled by role.</li>
+    <li><strong>Hosted in the cloud</strong> — no servers to manage on your end. Automatic backups.</li>
+  </ul>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<h2>What We Need From You</h2>
+
+<div class="card amber">
+  <h3>To get started, we'll need:</h3>
+  <ol>
+    <li><strong>Approval of this scope</strong> — does this cover what you need? Anything to add or change?</li>
+    <li><strong>A full copy of each blank form</strong> — we have scans, but clean originals help us get every field right.</li>
+    <li><strong>A list of your current plant/fleet</strong> — so we can pre-load the system with your existing assets.</li>
+    <li><strong>Site names</strong> — the job sites you'd want to set up first.</li>
+    <li><strong>Who'll be testing</strong> — a couple of operators and a manager to try it out and give feedback during the build.</li>
+  </ol>
+</div>
+
+<hr class="divider">
+
+<!-- ============================================ -->
+<div class="approval-box">
+  <h3>Next Step</h3>
+  <p>Review this document. Let us know if anything needs changing, adding, or removing.<br>
+  Once you're happy with the scope, we'll move into building Phase 1.</p>
+  <br>
+  <p style="font-size: 0.85rem; color: var(--muted);">
+    Reply to this document with <strong>"Approved"</strong>, <strong>"Approved with changes"</strong>, or your questions.
+  </p>
+</div>
+
+<footer>
+  Chex — Plant &amp; Vehicle Check Tracking &middot; Scoping Document v1.0
+</footer>
+
+</body>
+</html>

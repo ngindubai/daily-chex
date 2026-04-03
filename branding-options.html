@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chex — Logo &amp; Branding Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Archivo:wght@400;500;600;700;800;900&family=Unbounded:wght@400;500;600;700;800;900&family=Rubik:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page-bg: #0f0f0f;
+    --card-bg: #1a1a1a;
+    --card-border: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #888;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    text-align: center;
+    padding: 48px 20px 32px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  header h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  header .meta {
+    margin-top: 16px;
+    font-size: 0.8rem;
+    color: #555;
+  }
+
+  .intro {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 20px;
+    text-align: center;
+  }
+
+  .intro p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-bottom: 12px;
+  }
+
+  .options {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 16px 60px;
+  }
+
+  /* ---- OPTION CARD ---- */
+  .option {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+
+  .option-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .option-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .option-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .option-header .style-tag {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .option-body {
+    padding: 24px;
+  }
+
+  .palette {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.08);
+    position: relative;
+  }
+
+  .swatch .hex {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .font-info {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .font-info strong { color: var(--text); }
+
+  /* ---- MOCKUP GRID ---- */
+  .mockups {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  @media (min-width: 600px) {
+    .mockups { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  .mockup {
+    text-align: center;
+  }
+
+  .mockup-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* ---- PHONE MOCKUP ---- */
+  .phone-frame {
+    width: 180px;
+    height: 360px;
+    border-radius: 28px;
+    border: 3px solid #333;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phone-notch {
+    width: 80px;
+    height: 22px;
+    background: #333;
+    border-radius: 0 0 14px 14px;
+    margin: 0 auto;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .phone-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 32px 12px 12px;
+    position: relative;
+  }
+
+  .phone-logo-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 0 12px;
+  }
+
+  .phone-checklist {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  .phone-check-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.55rem;
+    font-weight: 500;
+  }
+
+  .phone-check-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .phone-bottom-bar {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    border-top-width: 1px;
+    border-top-style: solid;
+    margin-top: auto;
+  }
+
+  .phone-nav-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    opacity: 0.3;
+  }
+
+  .phone-nav-dot.active { opacity: 1; }
+
+  /* ---- WEBSITE MOCKUP ---- */
+  .web-frame {
+    width: 100%;
+    max-width: 260px;
+    border-radius: 10px;
+    border: 2px solid #333;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .web-toolbar {
+    height: 24px;
+    background: #222;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .web-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .web-dot.r { background: #ff5f57; }
+  .web-dot.y { background: #ffbd2e; }
+  .web-dot.g { background: #28c940; }
+
+  .web-address {
+    flex: 1;
+    height: 14px;
+    background: #181818;
+    border-radius: 3px;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    font-size: 0.45rem;
+    color: #555;
+  }
+
+  .web-content {
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .web-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+  }
+
+  .web-nav-links {
+    display: flex;
+    gap: 8px;
+  }
+
+  .web-nav-link {
+    font-size: 0.45rem;
+    font-weight: 500;
+    opacity: 0.5;
+  }
+
+  .web-hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px 20px;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .web-hero h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .web-hero p {
+    font-size: 0.42rem;
+    opacity: 0.5;
+    line-height: 1.3;
+  }
+
+  .web-cta {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.42rem;
+    font-weight: 700;
+    border: none;
+    margin-top: 4px;
+  }
+
+  /* ---- STICKER MOCKUP ---- */
+  .sticker-scene {
+    width: 100%;
+    max-width: 260px;
+    height: 200px;
+    border-radius: 12px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    background: #2a2a2a;
+  }
+
+  /* Digger/excavator drawn in CSS */
+  .digger {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+  }
+
+  .digger-body {
+    position: absolute;
+    bottom: 40px;
+    left: 20px;
+    width: 140px;
+    height: 50px;
+    background: #d4a017;
+    border-radius: 6px 6px 2px 2px;
+  }
+
+  .digger-cab {
+    position: absolute;
+    bottom: 90px;
+    left: 30px;
+    width: 50px;
+    height: 40px;
+    background: #d4a017;
+    border-radius: 4px 4px 0 0;
+    border: 2px solid #b8900f;
+  }
+
+  .digger-window {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    height: 22px;
+    background: #87CEEB;
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+
+  .digger-arm {
+    position: absolute;
+    bottom: 100px;
+    left: 75px;
+    width: 100px;
+    height: 10px;
+    background: #d4a017;
+    border-radius: 3px;
+    transform: rotate(-30deg);
+    transform-origin: left center;
+  }
+
+  .digger-bucket {
+    position: absolute;
+    top: -30px;
+    right: -5px;
+    width: 24px;
+    height: 20px;
+    background: #b8900f;
+    border-radius: 0 0 4px 4px;
+    border: 2px solid #a07d0d;
+  }
+
+  .digger-tracks {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 160px;
+    height: 34px;
+    background: #333;
+    border-radius: 17px;
+  }
+
+  .digger-track-wheel {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #444;
+    border: 2px solid #555;
+    top: 6px;
+  }
+
+  .digger-track-wheel:nth-child(1) { left: 8px; }
+  .digger-track-wheel:nth-child(2) { left: 40px; }
+  .digger-track-wheel:nth-child(3) { left: 72px; }
+  .digger-track-wheel:nth-child(4) { left: 104px; }
+  .digger-track-wheel:nth-child(5) { left: 130px; }
+
+  .ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 14px;
+    background: #5a442a;
+  }
+
+  /* QR sticker on the digger */
+  .sticker {
+    position: absolute;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    z-index: 10;
+  }
+
+  .sticker.on-body {
+    top: 28px;
+    right: 30px;
+    width: 80px;
+    height: 80px;
+    padding: 6px;
+  }
+
+  .sticker-qr {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 2px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 1px;
+    padding: 2px;
+  }
+
+  .qr-cell {
+    background: #000;
+    border-radius: 0.5px;
+  }
+
+  .qr-cell.w { background: #fff; }
+
+  .sticker-text {
+    font-size: 0.5rem;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .sticker-id {
+    font-size: 0.35rem;
+    opacity: 0.6;
+    font-weight: 500;
+  }
+
+  /* ---- Pick button ---- */
+  .pick-bar {
+    padding: 16px 24px;
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .pick-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .pick-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .pick-btn.selected {
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
+  }
+
+  .pick-notes {
+    flex: 1;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.35;
+    padding-right: 16px;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    text-align: center;
+    padding: 32px 20px;
+    border-top: 1px solid var(--card-border);
+    font-size: 0.8rem;
+    color: #444;
+  }
+
+  @media (max-width: 599px) {
+    .mockups { gap: 28px; }
+    .phone-frame { width: 160px; height: 320px; }
+    .option-header { padding: 18px 18px 14px; }
+    .option-body { padding: 18px; }
+    header h1 { font-size: 1.8rem; }
+    .pick-bar { flex-direction: column; gap: 12px; text-align: center; }
+    .pick-notes { padding-right: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chex — Branding Options</h1>
+  <p>10 directions for the Chex logo and brand. Each shown as a phone app, website, and plant sticker.</p>
+  <div class="meta">Prepared 3 April 2026 &middot; Pick your favourite or tell us what to mix</div>
+</header>
+
+<div class="intro">
+  <p>Each option has a different personality. Scroll through, look at how the logo works across all three contexts, and pick the one (or combination) that feels right.</p>
+</div>
+
+<div class="options" id="options">
+</div>
+
+<footer>
+  Chex &middot; Plant &amp; Vehicle Check Tracking &middot; Branding Options v1.0
+</footer>
+
+<script>
+const options = [
+  {
+    num: 1,
+    name: "Hi-Vis",
+    style: "Construction Bold — High-visibility safety theme",
+    font: "Archivo Black",
+    fontFamily: "'Archivo', sans-serif",
+    colors: { primary: "#f59e0b", secondary: "#111827", accent: "#22c55e", danger: "#ef4444", bg: "#111827", surface: "#1e293b" },
+    tagline: "Every check. Every site. Every time.",
+    logoStyle: "bold-caps",
+    letterSpacing: "3px",
+  },
+  {
+    num: 2,
+    name: "Blueprint",
+    style: "Technical Precision — Engineering blueprint feel",
+    font: "Space Grotesk",
+    fontFamily: "'Manrope', sans-serif",
+    colors: { primary: "#3b82f6", secondary: "#0f172a", accent: "#22c55e", danger: "#f43f5e", bg: "#0f172a", surface: "#1e293b" },
+    tagline: "Plant tracking, drawn to spec.",
+    logoStyle: "mono-outline",
+    letterSpacing: "6px",
+  },
+  {
+    num: 3,
+    name: "Fieldwork",
+    style: "Earthy & Rugged — Outdoor worksite tone",
+    font: "Barlow",
+    fontFamily: "'Barlow', sans-serif",
+    colors: { primary: "#84cc16", secondary: "#1a1c1e", accent: "#22c55e", danger: "#ef4444", bg: "#1a1c1e", surface: "#262a2d" },
+    tagline: "From site to sorted.",
+    logoStyle: "stencil",
+    letterSpacing: "4px",
+  },
+  {
+    num: 4,
+    name: "Signal",
+    style: "Clean & Modern — Traffic-light clarity",
+    font: "Outfit",
+    fontFamily: "'Outfit', sans-serif",
+    colors: { primary: "#10b981", secondary: "#ffffff", accent: "#22c55e", danger: "#ef4444", bg: "#ffffff", surface: "#f1f5f9" },
+    tagline: "Green means go. Red means fix.",
+    logoStyle: "traffic-light",
+    letterSpacing: "2px",
+    darkText: true,
+  },
+  {
+    num: 5,
+    name: "Anvil",
+    style: "Industrial Heavyweight — Metal & machinery",
+    font: "Unbounded",
+    fontFamily: "'Unbounded', sans-serif",
+    colors: { primary: "#e2e8f0", secondary: "#0c0c0c", accent: "#22c55e", danger: "#ef4444", bg: "#0c0c0c", surface: "#161616" },
+    tagline: "Built tough. Checks tougher.",
+    logoStyle: "heavy",
+    letterSpacing: "2px",
+  },
+  {
+    num: 6,
+    name: "Neon Site",
+    style: "Electric Pop — High-energy digital-first",
+    font: "Sora",
+    fontFamily: "'Sora', sans-serif",
+    colors: { primary: "#a855f7", secondary: "#0a0a0a", accent: "#22c55e", danger: "#f43f5e", bg: "#0a0a0a", surface: "#141414" },
+    tagline: "Scan. Check. Done.",
+    logoStyle: "neon",
+    letterSpacing: "5px",
+  },
+  {
+    num: 7,
+    name: "Foreman",
+    style: "Professional & Trusted — Fleet management feel",
+    font: "Plus Jakarta Sans",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    colors: { primary: "#1d4ed8", secondary: "#ffffff", accent: "#16a34a", danger: "#dc2626", bg: "#ffffff", surface: "#f8fafc" },
+    tagline: "Your fleet. Your plant. Full picture.",
+    logoStyle: "badge",
+    letterSpacing: "1px",
+    darkText: true,
+  },
+  {
+    num: 8,
+    name: "Hardhat",
+    style: "Safety-First — Warning stripe energy",
+    font: "Rubik",
+    fontFamily: "'Rubik', sans-serif",
+    colors: { primary: "#facc15", secondary: "#18181b", accent: "#22c55e", danger: "#ef4444", bg: "#18181b", surface: "#27272a" },
+    tagline: "No check left behind.",
+    logoStyle: "hazard",
+    letterSpacing: "3px",
+  },
+  {
+    num: 9,
+    name: "Slate",
+    style: "Minimal & Sharp — Understated confidence",
+    font: "DM Sans",
+    fontFamily: "'DM Sans', sans-serif",
+    colors: { primary: "#64748b", secondary: "#0f172a", accent: "#22c55e", danger: "#f43f5e", bg: "#0f172a", surface: "#1e293b" },
+    tagline: "Quiet confidence, total control.",
+    logoStyle: "minimal",
+    letterSpacing: "4px",
+  },
+  {
+    num: 10,
+    name: "Lime",
+    style: "Fresh & Friendly — Approachable and modern",
+    font: "Poppins",
+    fontFamily: "'Poppins', sans-serif",
+    colors: { primary: "#22c55e", secondary: "#052e16", accent: "#22c55e", danger: "#ef4444", bg: "#052e16", surface: "#0a3d1f" },
+    tagline: "The smart way to check your kit.",
+    logoStyle: "rounded",
+    letterSpacing: "2px",
+  },
+];
+
+const container = document.getElementById('options');
+
+function renderLogo(opt, size, context) {
+  const s = size || 'md';
+  const sizes = { sm: { text: '1rem', icon: 16, gap: 4 }, md: { text: '1.4rem', icon: 22, gap: 6 }, lg: { text: '1.8rem', icon: 28, gap: 8 } };
+  const sz = sizes[s];
+  const c = opt.colors;
+  const textColor = context === 'sticker' ? '#111' : (opt.darkText && context === 'web' ? c.secondary : c.primary);
+
+  const tick = `<svg width="${sz.icon}" height="${sz.icon}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="${c.accent}"/><path d="M6 12.5l4 4 8-8.5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const cross = `<svg width="${sz.icon}" height="${sz.icon}" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="${c.danger}"/><path d="M7 7l10 10M17 7l-10 10" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>`;
+
+  let logoHTML = '';
+
+  switch(opt.logoStyle) {
+    case 'bold-caps':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px">
+        ${tick}<span style="font-family:${opt.fontFamily};font-weight:900;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor};text-transform:uppercase">CHEX</span>${cross}
+      </div>`;
+      break;
+
+    case 'mono-outline':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px">
+        <div style="display:flex;gap:2px">${tick}${cross}</div>
+        <span style="font-family:${opt.fontFamily};font-weight:800;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor};text-transform:uppercase;border:2px solid ${textColor};padding:2px 8px;border-radius:4px">CHEX</span>
+      </div>`;
+      break;
+
+    case 'stencil':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px">
+        ${tick}<span style="font-family:${opt.fontFamily};font-weight:800;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor};text-transform:uppercase">CH</span><span style="font-family:${opt.fontFamily};font-weight:800;font-size:${sz.text};color:${c.accent}">✓</span><span style="font-family:${opt.fontFamily};font-weight:800;font-size:${sz.text};color:${c.danger}">✗</span>
+      </div>`;
+      break;
+
+    case 'traffic-light':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap+2}px">
+        <div style="background:#1e293b;border-radius:20px;padding:3px;display:flex;flex-direction:column;gap:2px;align-items:center">
+          <div style="width:${sz.icon*0.6}px;height:${sz.icon*0.6}px;border-radius:50%;background:${c.danger}"></div>
+          <div style="width:${sz.icon*0.6}px;height:${sz.icon*0.6}px;border-radius:50%;background:${c.accent}"></div>
+        </div>
+        <span style="font-family:${opt.fontFamily};font-weight:700;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor}">Chex</span>
+      </div>`;
+      break;
+
+    case 'heavy':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px">
+        <div style="position:relative;display:flex;align-items:center;gap:0">
+          <span style="font-family:${opt.fontFamily};font-weight:900;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor};text-transform:uppercase">CHE</span>
+          <div style="display:flex;flex-direction:column;gap:1px;margin-left:2px">
+            <svg width="${sz.icon*0.7}" height="${sz.icon*0.7}" viewBox="0 0 24 24" fill="none"><path d="M6 12.5l4 4 8-8.5" stroke="${c.accent}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="${sz.icon*0.7}" height="${sz.icon*0.7}" viewBox="0 0 24 24" fill="none"><path d="M7 7l10 10M17 7l-10 10" stroke="${c.danger}" stroke-width="3.5" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+      </div>`;
+      break;
+
+    case 'neon':
+      const glow = context === 'sticker' ? '' : `text-shadow: 0 0 10px ${c.primary}, 0 0 30px ${c.primary}40;`;
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px">
+        ${tick}<span style="font-family:${opt.fontFamily};font-weight:800;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor};text-transform:uppercase;${glow}">CHEX</span>${cross}
+      </div>`;
+      break;
+
+    case 'badge':
+      const badgeBorder = context === 'sticker' ? c.primary : c.primary;
+      const badgeBg = context === 'sticker' ? '#fff' : (opt.darkText ? '#fff' : c.surface);
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px;border:2.5px solid ${badgeBorder};border-radius:8px;padding:4px 10px;background:${badgeBg}">
+        ${tick}<span style="font-family:${opt.fontFamily};font-weight:800;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${c.primary}">Chex</span>${cross}
+      </div>`;
+      break;
+
+    case 'hazard':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px">
+        <div style="background:repeating-linear-gradient(135deg, ${c.primary}, ${c.primary} 3px, ${c.secondary} 3px, ${c.secondary} 6px);width:${sz.icon+4}px;height:${sz.icon+4}px;border-radius:4px;display:flex;align-items:center;justify-content:center">
+          <svg width="${sz.icon*0.8}" height="${sz.icon*0.8}" viewBox="0 0 24 24" fill="none"><path d="M6 12.5l4 4 8-8.5" stroke="${c.secondary}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span style="font-family:${opt.fontFamily};font-weight:800;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor};text-transform:uppercase">CHEX</span>
+      </div>`;
+      break;
+
+    case 'minimal':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap+4}px">
+        <span style="font-family:${opt.fontFamily};font-weight:600;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor};text-transform:lowercase">chex</span>
+        <div style="display:flex;gap:3px">${tick}${cross}</div>
+      </div>`;
+      break;
+
+    case 'rounded':
+      logoHTML = `<div style="display:flex;align-items:center;gap:${sz.gap}px;background:${c.accent}22;padding:4px 12px;border-radius:999px">
+        ${tick}<span style="font-family:${opt.fontFamily};font-weight:700;font-size:${sz.text};letter-spacing:${opt.letterSpacing};color:${textColor}">Chex</span>
+      </div>`;
+      break;
+  }
+
+  return logoHTML;
+}
+
+function renderPhone(opt) {
+  const c = opt.colors;
+  const isDark = !opt.darkText;
+  const screenBg = isDark ? c.bg : c.surface;
+  const itemBg = isDark ? c.surface : '#fff';
+  const itemText = isDark ? '#e2e8f0' : '#334155';
+  const borderCol = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+  const bottomBg = isDark ? c.surface : '#fff';
+
+  const items = [
+    { text: 'Oil / Fluid Levels', pass: true },
+    { text: 'Tyre Condition', pass: true },
+    { text: 'Mirrors & Glass', pass: false },
+    { text: 'Lights & Indicators', pass: true },
+    { text: 'Brakes / ABS', pass: true },
+  ];
+
+  const checkItems = items.map(it => {
+    const iconBg = it.pass ? c.accent : c.danger;
+    const icon = it.pass
+      ? `<svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M6 13l4 4 8-8" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+      : `<svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M7 7l10 10M17 7l-10 10" stroke="white" stroke-width="4" stroke-linecap="round"/></svg>`;
+    return `<div class="phone-check-item" style="background:${itemBg};color:${itemText};border:1px solid ${borderCol}">
+      <div class="phone-check-icon" style="background:${iconBg}">${icon}</div>
+      ${it.text}
+    </div>`;
+  }).join('');
+
+  return `<div class="phone-frame" style="border-color:${isDark ? '#333' : '#ccc'}">
+    <div class="phone-notch" style="background:${isDark ? '#333' : '#ccc'}"></div>
+    <div class="phone-screen" style="background:${screenBg}">
+      <div class="phone-logo-area">${renderLogo(opt, 'sm', 'phone')}</div>
+      <div class="phone-checklist">${checkItems}</div>
+      <div class="phone-bottom-bar" style="border-color:${borderCol};background:${bottomBg}">
+        <div class="phone-nav-dot active" style="background:${c.primary}"></div>
+        <div class="phone-nav-dot" style="background:${c.primary}"></div>
+        <div class="phone-nav-dot" style="background:${c.primary}"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderWeb(opt) {
+  const c = opt.colors;
+  const isDark = !opt.darkText;
+  const bg = isDark ? c.bg : c.bg;
+  const text = isDark ? '#e2e8f0' : c.secondary;
+  const heroBg = isDark ? c.surface : c.surface;
+
+  return `<div class="web-frame" style="border-color:${isDark ? '#333' : '#ddd'}">
+    <div class="web-toolbar">
+      <div class="web-dot r"></div><div class="web-dot y"></div><div class="web-dot g"></div>
+      <div class="web-address">chex.app</div>
+    </div>
+    <div class="web-content" style="background:${bg}">
+      <div class="web-nav">
+        <div>${renderLogo(opt, 'sm', 'web')}</div>
+        <div class="web-nav-links" style="color:${text}">
+          <span class="web-nav-link">Dashboard</span>
+          <span class="web-nav-link">Assets</span>
+          <span class="web-nav-link">Reports</span>
+        </div>
+      </div>
+      <div class="web-hero" style="background:${heroBg}">
+        <h3 style="color:${text};font-family:${opt.fontFamily}">${opt.tagline}</h3>
+        <p style="color:${text}">Digital plant &amp; vehicle checks. QR scanning. PDF reports. One app.</p>
+        <div class="web-cta" style="background:${c.primary};color:${isDark ? '#000' : '#fff'}">Start Checking</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSticker(opt) {
+  const c = opt.colors;
+
+  const qrPattern = [
+    [1,1,1,0,1],[1,0,1,0,0],[1,1,1,0,1],[0,0,0,0,1],[1,0,1,1,1]
+  ];
+  const qrCells = qrPattern.flat().map(v => `<div class="qr-cell ${v?'':'w'}"></div>`).join('');
+
+  return `<div class="sticker-scene">
+    <div class="digger">
+      <div class="digger-tracks">
+        <div class="digger-track-wheel"></div>
+        <div class="digger-track-wheel"></div>
+        <div class="digger-track-wheel"></div>
+        <div class="digger-track-wheel"></div>
+        <div class="digger-track-wheel"></div>
+      </div>
+      <div class="digger-body"></div>
+      <div class="digger-cab"><div class="digger-window"></div></div>
+      <div class="digger-arm"><div class="digger-bucket"></div></div>
+      <div class="ground"></div>
+    </div>
+    <div class="sticker on-body" style="background:${opt.darkText ? '#fff' : '#f8f8f8'}">
+      <div style="transform:scale(0.7)">${renderLogo(opt, 'sm', 'sticker')}</div>
+      <div class="sticker-qr">${qrCells}</div>
+      <div class="sticker-text" style="color:#111;font-family:${opt.fontFamily}">SCAN ME</div>
+      <div class="sticker-id" style="color:#555">ID: PLT-00482</div>
+    </div>
+  </div>`;
+}
+
+options.forEach(opt => {
+  const c = opt.colors;
+  const el = document.createElement('div');
+  el.className = 'option';
+  el.id = `option-${opt.num}`;
+
+  el.innerHTML = `
+    <div class="option-header">
+      <div class="option-num" style="background:${c.primary};color:${c.primary === '#e2e8f0' || c.primary === '#facc15' || c.primary === '#f59e0b' ? '#000' : '#fff'}">${opt.num}</div>
+      <div>
+        <h2>"${opt.name}"</h2>
+        <span class="style-tag">${opt.style}</span>
+      </div>
+    </div>
+    <div class="option-body">
+      <div class="palette">
+        <div class="swatch" style="background:${c.primary}"><span class="hex">${c.primary}</span></div>
+        <div class="swatch" style="background:${c.secondary}"><span class="hex">${c.secondary}</span></div>
+        <div class="swatch" style="background:${c.accent}"><span class="hex">${c.accent}</span></div>
+        <div class="swatch" style="background:${c.danger}"><span class="hex">${c.danger}</span></div>
+        <div class="swatch" style="background:${c.surface}"><span class="hex">${c.surface}</span></div>
+      </div>
+      <div class="font-info"><strong>Font:</strong> ${opt.font} &nbsp;|&nbsp; <strong>Tagline:</strong> "${opt.tagline}"</div>
+      <div class="mockups">
+        <div class="mockup">
+          <div class="mockup-label">📱 App</div>
+          ${renderPhone(opt)}
+        </div>
+        <div class="mockup">
+          <div class="mockup-label">🖥 Website</div>
+          ${renderWeb(opt)}
+        </div>
+        <div class="mockup">
+          <div class="mockup-label">🏗 Plant Sticker</div>
+          ${renderSticker(opt)}
+        </div>
+      </div>
+    </div>
+    <div class="pick-bar">
+      <div class="pick-notes">Tap "Pick this one" to highlight your choice</div>
+      <button class="pick-btn" style="background:${c.primary};color:${c.primary === '#e2e8f0' || c.primary === '#facc15' || c.primary === '#f59e0b' || c.primary === '#22c55e' || c.primary === '#64748b' ? '#000' : '#fff'}" onclick="pickOption(${opt.num}, this)">Pick this one</button>
+    </div>
+  `;
+
+  container.appendChild(el);
+});
+
+function pickOption(num, btn) {
+  document.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  btn.textContent = '✓ Selected';
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "daily-chex",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "cd app && npm ci && npm run build && cd ../server && npm ci && npm run build",
+    "start": "cd server && npx drizzle-kit push --force && node dist/index.js",
+    "dev": "cd server && npm run dev",
+    "seed": "cd server && npm run db:seed"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

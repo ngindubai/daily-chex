@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chex — Implementation Plan</title>
+  <style>
+    :root {
+      --bg:#fff; --text:#111; --muted:#555; --faint:#888;
+      --accent:#1d4ed8; --accent-bg:#eff6ff;
+      --green:#16a34a; --green-bg:#f0fdf4;
+      --amber:#d97706; --amber-bg:#fffbeb;
+      --red:#dc2626; --red-bg:#fef2f2;
+      --border:#e5e7eb; --card:#f9fafb;
+      --purple:#7c3aed; --purple-bg:#f5f3ff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text);background:var(--bg);line-height:1.6;padding:16px;max-width:780px;margin:0 auto}
+    header{text-align:center;padding:32px 0 24px;border-bottom:2px solid var(--accent);margin-bottom:32px}
+    header h1{font-size:2rem;font-weight:800;letter-spacing:-0.5px;color:var(--accent)}
+    header .sub{margin-top:6px;color:var(--muted);font-size:1rem}
+    header .meta{margin-top:14px;font-size:0.82rem;color:var(--faint)}
+    h2{font-size:1.35rem;font-weight:700;margin:40px 0 12px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:6px}
+    h3{font-size:1.1rem;font-weight:600;margin:24px 0 8px;color:var(--text)}
+    h4{font-size:0.95rem;font-weight:700;margin:16px 0 6px;color:var(--accent)}
+    p,li{font-size:0.95rem}
+    p{margin-bottom:10px}
+    ul,ol{margin:8px 0 12px 20px}
+    li{margin-bottom:5px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0}
+    .card.accent{background:var(--accent-bg);border-color:var(--accent)}
+    .card.green{background:var(--green-bg);border-color:var(--green)}
+    .card.amber{background:var(--amber-bg);border-color:var(--amber)}
+    .card.red{background:var(--red-bg);border-color:var(--red)}
+    .card.purple{background:var(--purple-bg);border-color:var(--purple)}
+    .card h3,.card h4{margin-top:0}
+    table{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.88rem}
+    th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border)}
+    th{background:var(--card);font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.3px;color:var(--muted)}
+    code{background:#f1f5f9;padding:1px 5px;border-radius:3px;font-size:0.85em;color:var(--accent)}
+    pre{background:#0f172a;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:0.82rem;margin:12px 0;line-height:1.5}
+    .badge{display:inline-block;font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:4px}
+    .badge.blue{background:var(--accent-bg);color:var(--accent)}
+    .badge.green{background:var(--green-bg);color:var(--green)}
+    .badge.amber{background:var(--amber-bg);color:var(--amber)}
+    .badge.red{background:var(--red-bg);color:var(--red)}
+    .badge.purple{background:var(--purple-bg);color:var(--purple)}
+    hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+    .erd-box{background:#0f172a;color:#e2e8f0;padding:20px;border-radius:10px;font-family:'Courier New',monospace;font-size:0.78rem;line-height:1.55;overflow-x:auto;margin:16px 0;white-space:pre}
+    .note{background:#fffbeb;border-left:3px solid var(--amber);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:0.9rem}
+    .note strong{color:var(--amber)}
+    .decision{background:var(--purple-bg);border-left:3px solid var(--purple);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:0.9rem}
+    .decision strong{color:var(--purple)}
+    footer{text-align:center;padding:24px 0;font-size:0.82rem;color:var(--faint);border-top:1px solid var(--border);margin-top:40px}
+    @media(max-width:480px){body{padding:12px}header h1{font-size:1.5rem}h2{font-size:1.15rem}pre,.erd-box{font-size:0.72rem;padding:12px}}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Chex — Implementation Plan</h1>
+  <p class="sub">Complete technical design for Phase 1 build</p>
+  <div class="meta">v1.0 &middot; 3 April 2026 &middot; Internal working document</div>
+</header>
+
+<!-- ============================================ -->
+<h2>1. Organisational Hierarchy</h2>
+
+<p>The client runs multiple teams across multiple sites. A single site can have several teams working simultaneously. The data model needs to reflect this reality from day one — retrofitting hierarchy is painful.</p>
+
+<div class="card accent">
+  <h3>The hierarchy</h3>
+  <pre style="background:transparent;color:inherit;padding:0;margin:8px 0;font-size:0.88rem;line-height:1.6">
+Company (tenant)
+  └─ Sites (job sites / locations)
+       └─ Teams (gangs / crews assigned to a site)
+            └─ People (individual operators / drivers)
+                 └─ Assets (vehicles, trailers, plant)
+                      └─ Checks (inspections performed on assets)</pre>
+</div>
+
+<h3>Key rules</h3>
+<ul>
+  <li><strong>A company</strong> is the top-level tenant. Everything is scoped to a company. In v1, we build for a single company, but the schema supports multi-tenancy from the start so the app can be resold.</li>
+  <li><strong>A site</strong> is a physical job location (e.g. "M6 Junction 19 Resurfacing", "Stockport Town Centre Drainage"). Sites can be active or archived. A site has a name, optional address/postcode, and optional GPS coordinates.</li>
+  <li><strong>A team</strong> belongs to a site. Multiple teams can be on one site (e.g. "Day Shift", "Night Crew", "Subcontractor — ABC Ltd"). A team has a name, a team leader reference, and a site assignment. Teams can be moved between sites.</li>
+  <li><strong>A person</strong> is an individual operator, driver, or supervisor. A person belongs to a company and can be assigned to one team at a time (but can be reassigned). They have a name, phone, optional email, role, and optional operator licence number. They can also be unassigned (floaters, office staff).</li>
+  <li><strong>An asset</strong> (vehicle / trailer / plant) is owned by the company and currently assigned to a site. Assets move between sites as jobs change. An asset's check history follows it regardless of which site it was at when checked.</li>
+</ul>
+
+<div class="decision">
+  <strong>Design decision: </strong> Teams are lightweight. They're essentially named groups of people at a site. We don't over-engineer them — no sub-teams, no nested hierarchies. If a foreman wants to see "his lads' checks", he filters by team. If the office wants all checks for a site, they filter by site. Simple.
+</div>
+
+<div class="note">
+  <strong>Nuance: </strong> When a person does a check, we record which site and team they were assigned to at that moment. If they later move to a different team, the historical check still shows the original assignment. This matters for audit trails.
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>2. Data Model (ERD)</h2>
+
+<p>Every table has <code>id</code> (UUID), <code>created_at</code>, <code>updated_at</code>. Foreign keys enforce referential integrity. Soft-delete via <code>archived_at</code> where noted.</p>
+
+<div class="erd-box">
+┌─────────────────────────────┐      ┌─────────────────────────────┐
+│         companies           │      │           sites             │
+├─────────────────────────────┤      ├─────────────────────────────┤
+│ id            UUID PK       │──┐   │ id            UUID PK       │
+│ name          TEXT NOT NULL  │  │   │ company_id    UUID FK ──────│──┐
+│ slug          TEXT UNIQUE    │  │   │ name          TEXT NOT NULL  │  │
+│ created_at    TIMESTAMPTZ   │  │   │ address       TEXT           │  │
+│ updated_at    TIMESTAMPTZ   │  │   │ postcode      TEXT           │  │
+└─────────────────────────────┘  │   │ lat           DECIMAL       │  │
+                                 │   │ lng           DECIMAL       │  │
+                                 │   │ status        ENUM(active,  │  │
+                                 │   │               archived)     │  │
+                                 │   │ created_at    TIMESTAMPTZ   │  │
+                                 │   │ updated_at    TIMESTAMPTZ   │  │
+                                 │   └─────────────────────────────┘  │
+                                 │                                    │
+┌─────────────────────────────┐  │   ┌─────────────────────────────┐  │
+│          teams              │  │   │          people             │  │
+├─────────────────────────────┤  │   ├─────────────────────────────┤  │
+│ id            UUID PK       │  │   │ id            UUID PK       │  │
+│ company_id    UUID FK ──────│──┘   │ company_id    UUID FK ──────│──┘
+│ site_id       UUID FK ──────│──┐   │ team_id       UUID FK ──────│──┐
+│ name          TEXT NOT NULL  │  │   │ first_name    TEXT NOT NULL  │  │
+│ leader_id     UUID FK (opt) │  │   │ last_name     TEXT NOT NULL  │  │
+│ status        ENUM(active,  │  │   │ phone         TEXT           │  │
+│               archived)     │  │   │ email         TEXT           │  │
+│ created_at    TIMESTAMPTZ   │  │   │ role          ENUM(operator,│  │
+│ updated_at    TIMESTAMPTZ   │  │   │               supervisor,   │  │
+└─────────────────────────────┘  │   │               manager,      │  │
+               │                 │   │               admin)        │  │
+               │                 │   │ licence_no    TEXT           │  │
+               └─────────────────┘   │ pin           TEXT (hashed) │  │
+                                     │ status        ENUM(active,  │  │
+                                     │               archived)     │  │
+                                     │ created_at    TIMESTAMPTZ   │  │
+                                     │ updated_at    TIMESTAMPTZ   │  │
+                                     └─────────────────────────────┘  │
+                                                                      │
+                                                                      │
+┌──────────────────────────────────┐    ┌─────────────────────────────┘
+│           assets                 │    │
+├──────────────────────────────────┤    │
+│ id              UUID PK          │    │
+│ company_id      UUID FK          │    │
+│ site_id         UUID FK (current)│────┘
+│ type            ENUM(vehicle,    │
+│                 trailer, plant)  │
+│ name            TEXT NOT NULL     │  ← "CAT Digger", "Ford Transit"
+│ plant_id        TEXT             │  ← internal asset ID
+│ serial_number   TEXT             │
+│ registration    TEXT             │  ← vehicle reg, nullable
+│ supplier        TEXT             │  ← "GAP", "Speedy", "Owned"
+│ category        TEXT             │  ← "digger","dumper","genny", etc.
+│ weight_class    ENUM(standard,   │
+│                 over_7_5t)       │  ← triggers extra checks
+│ calibration_due DATE             │
+│ next_service    DATE             │
+│ qr_code         TEXT UNIQUE      │  ← the QR identifier string
+│ photo_url       TEXT             │  ← photo of the asset itself
+│ status          ENUM(active,     │
+│                 defective,       │
+│                 off_hire,        │
+│                 archived)        │
+│ notes           TEXT             │
+│ created_at      TIMESTAMPTZ      │
+│ updated_at      TIMESTAMPTZ      │
+└──────────────────────────────────┘
+
+┌──────────────────────────────────────────┐
+│              checks                      │
+├──────────────────────────────────────────┤
+│ id                UUID PK                │
+│ company_id        UUID FK                │
+│ asset_id          UUID FK                │
+│ person_id         UUID FK                │  ← who performed the check
+│ site_id           UUID FK                │  ← snapshot: site at time of check
+│ team_id           UUID FK (nullable)     │  ← snapshot: team at time of check
+│ check_template_id UUID FK                │  ← which form type
+│ status            ENUM(in_progress,      │
+│                   completed, abandoned)  │
+│ overall_result    ENUM(pass, fail, null) │  ← computed from items
+│ mileage_start     INTEGER                │
+│ mileage_end       INTEGER                │
+│ place_parked      TEXT                   │
+│ notes             TEXT                   │
+│ signature_url     TEXT                   │  ← digital signature image
+│ agent_signature   TEXT                   │  ← agent/supervisor countersign
+│ completed_at      TIMESTAMPTZ            │
+│ week_ending       DATE                   │  ← for weekly forms
+│ created_at        TIMESTAMPTZ            │
+│ updated_at        TIMESTAMPTZ            │
+└──────────────────────────────────────────┘
+
+┌──────────────────────────────────────────┐
+│           check_items                    │
+├──────────────────────────────────────────┤
+│ id                UUID PK                │
+│ check_id          UUID FK                │
+│ template_item_id  UUID FK                │  ← links to the question
+│ day_of_week       SMALLINT (0-6, null)   │  ← for weekly grid forms
+│ result            ENUM(pass, fail, na)   │
+│ notes             TEXT                   │
+│ created_at        TIMESTAMPTZ            │
+└──────────────────────────────────────────┘
+
+┌──────────────────────────────────────────┐
+│           check_photos                   │
+├──────────────────────────────────────────┤
+│ id                UUID PK                │
+│ check_id          UUID FK                │
+│ check_item_id     UUID FK (nullable)     │  ← specific item, or general
+│ url               TEXT NOT NULL           │
+│ caption           TEXT                   │
+│ created_at        TIMESTAMPTZ            │
+└──────────────────────────────────────────┘
+
+┌──────────────────────────────────────────┐
+│           defects                        │
+├──────────────────────────────────────────┤
+│ id                UUID PK                │
+│ company_id        UUID FK                │
+│ check_id          UUID FK                │  ← the check that found it
+│ asset_id          UUID FK                │
+│ reported_by       UUID FK (person)       │
+│ description       TEXT NOT NULL           │
+│ severity          ENUM(low, medium,      │
+│                   high, critical)        │
+│ status            ENUM(open, in_progress,│
+│                   resolved, accepted)    │
+│ action_taken      TEXT                   │
+│ resolved_by       UUID FK (person, null) │
+│ resolved_at       TIMESTAMPTZ            │
+│ created_at        TIMESTAMPTZ            │
+│ updated_at        TIMESTAMPTZ            │
+└──────────────────────────────────────────┘
+
+┌──────────────────────────────────────────┐
+│        check_templates                   │
+├──────────────────────────────────────────┤
+│ id                UUID PK                │
+│ company_id        UUID FK (null=global)  │
+│ name              TEXT NOT NULL           │
+│ slug              TEXT                   │
+│ asset_type        ENUM(vehicle, trailer, │
+│                   plant)                 │
+│ check_frequency   ENUM(daily, weekly)    │
+│ description       TEXT                   │
+│ version           INTEGER DEFAULT 1      │
+│ is_active         BOOLEAN DEFAULT true   │
+│ created_at        TIMESTAMPTZ            │
+│ updated_at        TIMESTAMPTZ            │
+└──────────────────────────────────────────┘
+
+┌──────────────────────────────────────────┐
+│       check_template_items               │
+├──────────────────────────────────────────┤
+│ id                UUID PK                │
+│ template_id       UUID FK                │
+│ section           TEXT                   │  ← "General Roadworthiness",
+│                                          │     "7.5T+", "Towing/Lifting"
+│ label             TEXT NOT NULL           │  ← "Fuel/Oil/Water Leaks"
+│ sort_order        SMALLINT               │
+│ is_required       BOOLEAN DEFAULT true   │
+│ applies_when      JSONB                  │  ← conditional logic, e.g.
+│                                          │     {"weight_class":"over_7_5t"}
+│ created_at        TIMESTAMPTZ            │
+└──────────────────────────────────────────┘</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>3. Check Templates — Form Mapping</h2>
+
+<p>Each of the three paper forms becomes a <code>check_template</code> with ordered <code>check_template_items</code> grouped by section. Here's how every field maps.</p>
+
+<h3>Template 1: Vehicle & Trailer Weekly Inspection</h3>
+<p><span class="badge blue">Source: MGroup Form</span> <span class="badge green">Weekly</span> <span class="badge amber">Asset type: vehicle + trailer</span></p>
+
+<div class="card">
+  <h4>Header fields → check record</h4>
+  <table>
+    <tr><th>Paper field</th><th>Maps to</th></tr>
+    <tr><td>Week ending</td><td><code>checks.week_ending</code></td></tr>
+    <tr><td>Registration</td><td><code>assets.registration</code> (auto-filled from scanned asset)</td></tr>
+    <tr><td>Drivers Name</td><td><code>checks.person_id</code> → <code>people.first_name + last_name</code></td></tr>
+  </table>
+
+  <h4>Vehicle items (15) — Section: "Vehicle Safety"</h4>
+  <table>
+    <tr><th>#</th><th>Paper label</th><th>Template item label</th></tr>
+    <tr><td>1</td><td>Lights</td><td>Lights & Indicators</td></tr>
+    <tr><td>2</td><td>Reflectors</td><td>Reflectors</td></tr>
+    <tr><td>3</td><td>Mirrors</td><td>Mirrors</td></tr>
+    <tr><td>4</td><td>Windscreen</td><td>Windscreen</td></tr>
+    <tr><td>5</td><td>Wipers/Washers</td><td>Wipers & Washers</td></tr>
+    <tr><td>6</td><td>Steering</td><td>Steering</td></tr>
+    <tr><td>7</td><td>Horn</td><td>Horn</td></tr>
+    <tr><td>8</td><td>Brakes & ABS</td><td>Brakes & ABS</td></tr>
+    <tr><td>9</td><td>Tyres & Wheel Fixings</td><td>Tyres & Wheel Fixings</td></tr>
+    <tr><td>10</td><td>Height Marker</td><td>Height Marker</td></tr>
+    <tr><td>11</td><td>Exhaust/Emissions</td><td>Exhaust & Emissions</td></tr>
+    <tr><td>12</td><td>Body Condition</td><td>Body Condition</td></tr>
+    <tr><td>13</td><td>Numberplates</td><td>Number Plates</td></tr>
+    <tr><td>14</td><td>Fuel/Oil/Water</td><td>Fuel / Oil / Water</td></tr>
+    <tr><td>15</td><td>Fire Extinguisher</td><td>Fire Extinguisher</td></tr>
+  </table>
+
+  <h4>Trailer items (15) — Section: "Trailer Safety"</h4>
+  <table>
+    <tr><th>#</th><th>Paper label</th><th>Template item label</th></tr>
+    <tr><td>1</td><td>Towing cable</td><td>Towing Cable</td></tr>
+    <tr><td>2</td><td>Breakaway cable</td><td>Breakaway Cable</td></tr>
+    <tr><td>3</td><td>Lights</td><td>Trailer Lights</td></tr>
+    <tr><td>4</td><td>Reflectors</td><td>Trailer Reflectors</td></tr>
+    <tr><td>5</td><td>Tyres</td><td>Trailer Tyres</td></tr>
+    <tr><td>6</td><td>Wheel fixings</td><td>Trailer Wheel Fixings</td></tr>
+    <tr><td>7</td><td>Mudguards</td><td>Mudguards</td></tr>
+    <tr><td>8</td><td>Body condition</td><td>Trailer Body Condition</td></tr>
+    <tr><td>9</td><td>Numberplates</td><td>Trailer Number Plates</td></tr>
+    <tr><td>10</td><td>Securing straps</td><td>Securing Straps</td></tr>
+    <tr><td>11</td><td>Spray suppression</td><td>Spray Suppression</td></tr>
+    <tr><td>12</td><td>Landing legs</td><td>Landing Legs</td></tr>
+    <tr><td>13</td><td>Kingpin/coupling</td><td>Kingpin / Coupling</td></tr>
+    <tr><td>14</td><td>Ground/chains</td><td>Ground Chains</td></tr>
+    <tr><td>15</td><td>Twist locks</td><td>Twist Locks</td></tr>
+  </table>
+
+  <p><strong>Grid structure:</strong> The paper form has a Mon–Sun column for each item. In the database, each cell is one <code>check_item</code> row with <code>day_of_week</code> set (0=Mon, 6=Sun). The check record covers the whole week. The app UI renders a grid matching the paper form.</p>
+</div>
+
+<h3>Template 2: Weekly PUWER Inspection Report</h3>
+<p><span class="badge blue">Source: SAW Ltd Form</span> <span class="badge green">Weekly</span> <span class="badge amber">Asset type: plant</span></p>
+
+<div class="card">
+  <h4>Unique structure</h4>
+  <p>This form is different from the others. It's not a per-item checklist — it's a <strong>register of all plant on site</strong> that week with a daily pass/fail tick for each piece of equipment. The items on the form aren't check questions — they're the assets themselves (Digger, Dumper, Genny, CAT, etc.).</p>
+
+  <h4>Header fields → check record</h4>
+  <table>
+    <tr><th>Paper field</th><th>Maps to</th></tr>
+    <tr><td>Site</td><td><code>checks.site_id</code> → <code>sites.name</code></td></tr>
+    <tr><td>Week Ending</td><td><code>checks.week_ending</code></td></tr>
+    <tr><td>Inspection carried out by</td><td><code>checks.person_id</code></td></tr>
+    <tr><td>Signed by</td><td><code>checks.signature_url</code></td></tr>
+  </table>
+
+  <h4>Per-asset row fields</h4>
+  <table>
+    <tr><th>Paper column</th><th>Maps to</th></tr>
+    <tr><td>Description of Plant and Equipment</td><td><code>assets.name</code> + <code>assets.category</code></td></tr>
+    <tr><td>Supplier (GAP, etc.)</td><td><code>assets.supplier</code></td></tr>
+    <tr><td>Plant ID No.</td><td><code>assets.plant_id</code></td></tr>
+    <tr><td>Daily Inspection ✓ (M/T/W/T/F/S/S)</td><td>7 × <code>check_items</code> per asset, <code>day_of_week</code> = 0–6</td></tr>
+    <tr><td>Defects Identified and Action Taken</td><td><code>defects</code> record linked to the check</td></tr>
+    <tr><td>Calibration/Test Date due</td><td><code>assets.calibration_due</code></td></tr>
+    <tr><td>Checked by (initials)</td><td><code>checks.person_id</code> (the person who initialled)</td></tr>
+  </table>
+
+  <div class="decision">
+    <strong>Design decision: </strong> The PUWER form is modelled as one <code>check</code> per asset per week (not one check for the whole form). This means each row in the paper grid becomes its own check record, making it consistent with the other templates and enabling per-asset history. The "Weekly PUWER" template has a single item: "Daily inspection pass/fail" repeated for each day via <code>day_of_week</code>. The UI groups them visually into the weekly grid the user expects.
+  </div>
+
+  <h4>Pre-listed equipment categories on the form</h4>
+  <p>The paper form pre-prints common equipment types. We use these as <code>assets.category</code> values:</p>
+  <table>
+    <tr><th>Category slug</th><th>Display name</th></tr>
+    <tr><td>van</td><td>Van</td></tr>
+    <tr><td>digger</td><td>Digger</td></tr>
+    <tr><td>pecker</td><td>Pecker</td></tr>
+    <tr><td>trailer</td><td>Trailer</td></tr>
+    <tr><td>dumper</td><td>Dumper</td></tr>
+    <tr><td>cat</td><td>CAT</td></tr>
+    <tr><td>genny</td><td>Genny / Generator</td></tr>
+    <tr><td>generator</td><td>Generator</td></tr>
+    <tr><td>sub_pump</td><td>Sub Pump</td></tr>
+    <tr><td>stihl_saw</td><td>Stihl Saw</td></tr>
+    <tr><td>breaker</td><td>Breaker</td></tr>
+    <tr><td>work_lights</td><td>Work Lights</td></tr>
+    <tr><td>other</td><td>Other (custom description)</td></tr>
+  </table>
+</div>
+
+<h3>Template 3: Vehicle Daily Check Sheet</h3>
+<p><span class="badge blue">Source: General Fleet Form</span> <span class="badge green">Daily (with weekly grid)</span> <span class="badge amber">Asset type: vehicle</span></p>
+
+<div class="card">
+  <h4>Header fields → check record</h4>
+  <table>
+    <tr><th>Paper field</th><th>Maps to</th></tr>
+    <tr><td>Agents Name</td><td>The supervisor/agent — stored as <code>checks.agent_signature</code> with a reference</td></tr>
+    <tr><td>Registration No.</td><td><code>assets.registration</code></td></tr>
+    <tr><td>Mileage at Start of Week</td><td><code>checks.mileage_start</code></td></tr>
+    <tr><td>Mileage at End of Week</td><td><code>checks.mileage_end</code></td></tr>
+    <tr><td>Place Parked</td><td><code>checks.place_parked</code></td></tr>
+    <tr><td>Name of Site</td><td><code>checks.site_id</code> → <code>sites.name</code></td></tr>
+  </table>
+
+  <h4>Section: "General Roadworthiness" (26 items, all vehicles)</h4>
+  <table>
+    <tr><th>#</th><th>Left column</th><th>Right column</th></tr>
+    <tr><td>1</td><td>Fuel/Oil/Water Leaks</td><td>Cab Interior/Seat Belts</td></tr>
+    <tr><td>2</td><td>Fuel/Oil/Water Levels</td><td>Brakes ABS/LBS</td></tr>
+    <tr><td>3</td><td>Battery Condition</td><td>Steering</td></tr>
+    <tr><td>4</td><td>Tyre / Wheel Fixings</td><td>Horn</td></tr>
+    <tr><td>5</td><td>Windscreen</td><td>Locks</td></tr>
+    <tr><td>6</td><td>Washers & Wipers</td><td>Exhaust/Emissions</td></tr>
+    <tr><td>7</td><td>Mirrors</td><td>Heating / Ventilation</td></tr>
+    <tr><td>8</td><td>Lights & Indicators</td><td>Spray Guards</td></tr>
+    <tr><td>9</td><td>No Plates & Reflectors</td><td>Fire Extinguisher</td></tr>
+    <tr><td>10</td><td>Body Damage</td><td>First Aid Kit</td></tr>
+    <tr><td>11</td><td>Initial</td><td>Initial</td></tr>
+  </table>
+  <p>Each item has a Mon–Sun daily grid. "Initial" rows become the operator's digital initials/confirmation for that day.</p>
+
+  <h4>Section: "Vehicles of 7.5T and Over" (6 items, conditional)</h4>
+  <table>
+    <tr><th>#</th><th>Left column</th><th>Right column</th></tr>
+    <tr><td>1</td><td>Plateing Certificate</td><td>Speedometer / Odometer</td></tr>
+    <tr><td>2</td><td>Tachograph Unit</td><td>Speed Limiter</td></tr>
+    <tr><td>3</td><td>Operators Licence Disc</td><td>Crane Operation</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Conditional display: </strong> These items only appear when <code>assets.weight_class = 'over_7_5t'</code>. The template items use <code>applies_when: {"weight_class": "over_7_5t"}</code>. The UI hides them for standard vehicles.
+  </div>
+
+  <h4>Section: "Towing and Lifting Equipment" (4 items, conditional)</h4>
+  <table>
+    <tr><th>#</th><th>Left column</th><th>Right column</th></tr>
+    <tr><td>1</td><td>Towing Equip & Trailer Socket</td><td>Load Secured</td></tr>
+    <tr><td>2</td><td>Winches (Mobile & Fixed)</td><td>Safety Alarms</td></tr>
+  </table>
+
+  <h4>Defect reporting section</h4>
+  <p>"Report any defects / damages here" → creates a <code>defects</code> record. "Action taken" → <code>defects.action_taken</code>. "NIL DEFECTS" → no defect record created, <code>checks.overall_result = 'pass'</code>.</p>
+
+  <h4>Signatures</h4>
+  <ul>
+    <li>"Driver's Signature" → <code>checks.signature_url</code></li>
+    <li>"Agent's Signature" → <code>checks.agent_signature</code></li>
+    <li>"I confirm all mileage driven this week was for business use" → boolean flag on the check</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>4. Authentication & Roles</h2>
+
+<p>Tradesmen don't want to remember passwords. They're on a cold site at 6am in work gloves.</p>
+
+<div class="card">
+  <h3>Auth approach: PIN + device trust</h3>
+  <ul>
+    <li><strong>Operators/drivers</strong> log in with a 4-digit PIN. No email required. The manager creates their account and gives them a PIN. The PIN is scoped to the company (two companies could have the same PIN for different people, but within a company, PINs are unique).</li>
+    <li><strong>Supervisors and Managers</strong> log in with email + password for dashboard access. They can also use a PIN for quick on-site access.</li>
+    <li><strong>Device trust</strong>: after first login on a device, we store a secure token. The operator just enters their PIN next time — no username step. The device "knows" which company it belongs to.</li>
+    <li><strong>Session length</strong>: 30 days for operators (they shouldn't have to log in every day), 24 hours for dashboard sessions.</li>
+  </ul>
+</div>
+
+<h3>Role permissions</h3>
+<table>
+  <tr><th>Action</th><th>Operator</th><th>Supervisor</th><th>Manager</th><th>Admin</th></tr>
+  <tr><td>Perform checks</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>View own checks</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Report defects</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>View team checks</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>View all site checks</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Countersign checks</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Resolve defects</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>View all sites</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Manage assets</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Manage people/teams</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Generate PDF reports</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+  <tr><td>Manage company settings</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+  <tr><td>Manage check templates</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+</table>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>5. QR Code System</h2>
+
+<div class="card">
+  <h3>QR generation</h3>
+  <ul>
+    <li>Each asset gets a unique QR code when created. Format: <code>CHX-{8-char-alphanumeric}</code> (e.g. <code>CHX-A7K9M2P4</code>).</li>
+    <li>The QR encodes a URL: <code>https://app.chex.io/q/{CHX-A7K9M2P4}</code>. This means any phone can scan it — no app needed. The URL resolves to the asset's check page.</li>
+    <li>QR stickers are generated as downloadable PDFs — sized for standard label printers (62mm × 30mm fits a Brother QL label). Include the Chex logo, asset name, QR code, and the ID in human-readable text.</li>
+    <li>Batch print: managers can select multiple assets and generate a sheet of QR stickers.</li>
+  </ul>
+
+  <h3>QR scanning flow</h3>
+  <ol>
+    <li>Operator opens Chex → taps "Scan" (or just visits the QR URL directly from their phone camera).</li>
+    <li>Camera opens, operator points at the sticker.</li>
+    <li>App looks up the asset by QR code.</li>
+    <li>If the operator is logged in → shows the asset and prompts "Start check?"</li>
+    <li>If not logged in → prompts for PIN first, then shows the asset.</li>
+    <li>If the QR code is unknown → shows "Asset not found. Ask your manager to register this item."</li>
+  </ol>
+
+  <div class="note">
+    <strong>Offline consideration: </strong> QR lookup needs to work offline. The PWA caches the asset register locally. The QR code is matched against the local cache. If no match (new asset not yet synced), it queues the check to be linked when connectivity returns.
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>6. Check Flow — Step by Step</h2>
+
+<p>What happens from QR scan to completed check record.</p>
+
+<div class="card green">
+  <h3>Daily vehicle check (Template 3) — most detailed flow</h3>
+  <ol>
+    <li><strong>Scan or select asset</strong> → app identifies the vehicle, shows its name, reg, last check date.</li>
+    <li><strong>Confirm identity</strong> → "Checking as: John Smith, Team: Alpha Crew, Site: M6 Jcn 19". If wrong, operator can switch (but can only switch to teams they're assigned to).</li>
+    <li><strong>Mileage entry</strong> → if it's the start of the week, prompt for start mileage. If end of week, prompt for end mileage. Auto-populate from last check's end mileage where available.</li>
+    <li><strong>Checklist — General Roadworthiness</strong> → 20 items shown as a scrollable list. Each item: tap ✓ (pass), ✗ (fail), or "N/A". Failed items expand to show a notes field and camera button.</li>
+    <li><strong>Checklist — 7.5T+ section</strong> → only shown if the vehicle's weight class is over 7.5T. 6 additional items.</li>
+    <li><strong>Checklist — Towing/Lifting</strong> → only shown if the vehicle has towing/lifting capability (asset flag). 4 items.</li>
+    <li><strong>Defect summary</strong> → if any items failed, shows a summary screen. Operator must describe each defect. Can take photos. Defect severity auto-suggested (critical if brakes/steering, low if bodywork).</li>
+    <li><strong>Confirmation</strong> → "You checked 26 items: 24 pass, 2 fail, 0 N/A. 2 defects reported." Shows a clear pass/fail indicator.</li>
+    <li><strong>Signature</strong> → operator draws their signature on screen. Timestamped.</li>
+    <li><strong>Submit</strong> → record saved. If online, synced immediately. If offline, queued.</li>
+    <li><strong>Agent countersign</strong> → optional. If the supervisor is present, they can countersign immediately. Otherwise, the check shows "Awaiting agent signature" in the dashboard.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3>Weekly PUWER check (Template 2) — different flow</h3>
+  <ol>
+    <li><strong>Supervisor opens "PUWER Weekly"</strong> from the site dashboard (not QR-triggered — this is a site-level activity).</li>
+    <li><strong>Shows all plant assigned to this site</strong> — listed with supplier, plant ID, category. The supervisor can add/remove assets from the site register here.</li>
+    <li><strong>Daily grid</strong> → for each day of the current week, tap ✓ or ✗ per asset. This is the familiar paper grid experience. The app pre-fills today's column and makes it easy to go back and fill previous days.</li>
+    <li><strong>Defect notes</strong> → tap any ✗ to expand and add defect details, photos, action taken.</li>
+    <li><strong>Calibration dates</strong> → shown alongside each asset. Highlighted amber if due within 30 days, red if overdue.</li>
+    <li><strong>Sign off</strong> → supervisor signs the whole weekly report.</li>
+  </ol>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>7. Dashboard Views</h2>
+
+<div class="card">
+  <h3>Manager dashboard (all sites)</h3>
+  <ul>
+    <li><strong>Overview cards:</strong> Total assets, checks completed today, open defects, overdue checks, assets needing calibration.</li>
+    <li><strong>Site list:</strong> Each site shows: name, team count, asset count, today's check completion rate (e.g. "14/18 checks done"), defect count.</li>
+    <li><strong>Filter bar:</strong> By site, by date range, by status (all / has defects / overdue / complete).</li>
+    <li><strong>Asset register:</strong> Full list of all assets across all sites, with current status, last check date, current site assignment.</li>
+    <li><strong>People directory:</strong> All operators, their team assignment, last check performed, total checks this week.</li>
+  </ul>
+
+  <h3>Supervisor dashboard (single site)</h3>
+  <ul>
+    <li>Sees only assets and people at their site.</li>
+    <li><strong>Team view:</strong> Filter by team to see only that team's checks and assets.</li>
+    <li><strong>Today's outstanding:</strong> Which assets haven't been checked yet today? Which operators haven't done their checks?</li>
+    <li><strong>Defect queue:</strong> Open defects needing resolution or escalation.</li>
+    <li><strong>PUWER grid:</strong> The weekly plant inspection view, same as the paper form layout.</li>
+  </ul>
+
+  <h3>Operator view (their own work)</h3>
+  <ul>
+    <li><strong>Main screen:</strong> "Scan QR" button (big, prominent), recent checks, any assigned assets needing checks today.</li>
+    <li><strong>My checks:</strong> History of all checks they've performed.</li>
+    <li><strong>My defects:</strong> Defects they've reported and their resolution status.</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>8. Site & Team Management — Detail</h2>
+
+<p>This is where the nuance lives. The client has several teams per site and needs to track who did what, where, and when.</p>
+
+<div class="card accent">
+  <h3>Creating and managing sites</h3>
+  <ul>
+    <li>Manager goes to <strong>Sites → Add Site</strong>.</li>
+    <li>Fields: Site Name (required), Address/Postcode (optional), GPS pin (optional — device can auto-detect).</li>
+    <li>Site is immediately <code>active</code>. When a job ends, the manager archives the site. Archived sites and their data remain in the system but don't appear in active filters.</li>
+    <li>Archiving a site does <strong>not</strong> delete team assignments or asset assignments — it preserves them as historical record. But assets at an archived site are flagged for reassignment.</li>
+  </ul>
+
+  <h3>Creating and managing teams</h3>
+  <ul>
+    <li>Within a site, the manager creates teams: <strong>Sites → [Site Name] → Teams → Add Team</strong>.</li>
+    <li>Fields: Team Name (required), Team Leader (optional — select from people at this site).</li>
+    <li>Examples: "Day Shift", "Night Crew", "Groundworks Gang", "Sub — ABC Ltd", "Traffic Management".</li>
+    <li>Teams can be renamed, archived, or moved to a different site (the whole team moves, including members).</li>
+    <li>A person can only be on one team at a time. Reassigning them to a new team removes them from the old one.</li>
+  </ul>
+
+  <h3>Assigning people</h3>
+  <ul>
+    <li><strong>From the people directory:</strong> Select a person → Assign to Site → Choose Team. One action does both.</li>
+    <li><strong>From the team view:</strong> Add Member → pick from existing people or create a new person inline.</li>
+    <li><strong>Unassigned people</strong> (no team) can still perform checks — they just won't appear under any team filter. This handles office staff or floaters who visit multiple sites.</li>
+    <li><strong>Quick reassign:</strong> Drag or tap to move a person between teams within the same site. Cross-site transfer available from the person detail screen.</li>
+  </ul>
+</div>
+
+<div class="note">
+  <strong>Why this matters: </strong> When the office gets a defect report from "M6 Junction 19, Day Shift, John Smith", they instantly know the site, the crew responsible, and the individual. When they need all checks for a specific team (e.g. for a client audit), they filter by team. When an insurance company asks for a specific vehicle's history, they filter by asset — the team and site context travels with the record.
+</div>
+
+<h3>Asset assignment to sites</h3>
+<ul>
+  <li>Assets belong to the company but are <strong>assigned</strong> to a site at any given time.</li>
+  <li>Move an asset between sites: <strong>Asset Detail → Transfer to Site → [select site]</strong>. The transfer is timestamped and logged.</li>
+  <li>Assets can be "unassigned" — in the yard, off-hire, or in for repair. They show in the global asset register but not under any site.</li>
+  <li>When an asset moves sites, its full check history goes with it. The history shows which site each check was performed at.</li>
+</ul>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>9. Offline / PWA Strategy</h2>
+
+<div class="card amber">
+  <h3>Reality: construction sites have bad signal</h3>
+  <p>The app must work offline. Not "degrade gracefully" — actually work. An operator at the bottom of a trench needs to do their check regardless of signal.</p>
+  <ul>
+    <li><strong>Service worker</strong> caches the entire app shell, all templates, and the asset register for the current site.</li>
+    <li><strong>IndexedDB</strong> stores the local asset register, recent checks, and any queued (unsynced) data.</li>
+    <li><strong>QR lookup works offline</strong> — matches against the locally cached asset register.</li>
+    <li><strong>Checks are saved locally first, always.</strong> If online, they sync immediately. If offline, they queue and sync when connectivity returns.</li>
+    <li><strong>Conflict resolution:</strong> Last-write-wins for most fields. For defect resolution specifically, server-side wins (the office's update takes precedence over a stale local state).</li>
+    <li><strong>Sync indicator:</strong> A small badge in the app header shows "2 checks pending sync" so the operator knows data is queued.</li>
+    <li><strong>Photo handling:</strong> Photos are compressed client-side (max 1200px, ~200KB) and stored in IndexedDB until sync. On sync, they upload to object storage and the URL is written to the record.</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>10. Tech Stack</h2>
+
+<div class="card">
+  <table>
+    <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+    <tr><td>Frontend</td><td>React + Vite, PWA</td><td>Fast builds, excellent PWA tooling, large ecosystem for camera/QR libs</td></tr>
+    <tr><td>UI library</td><td>Tailwind CSS + shadcn/ui</td><td>Fast to build, consistent, mobile-first, easy to theme to brand</td></tr>
+    <tr><td>QR scanning</td><td>html5-qrcode</td><td>No native dependencies, works in all mobile browsers</td></tr>
+    <tr><td>Signature</td><td>signature_pad</td><td>Lightweight, touch-friendly, exports to PNG/SVG</td></tr>
+    <tr><td>Camera</td><td>Native MediaDevices API</td><td>No library needed — direct browser camera access</td></tr>
+    <tr><td>Offline storage</td><td>IndexedDB via Dexie.js</td><td>Reliable, good API, handles large photo blobs</td></tr>
+    <tr><td>Backend</td><td>Node.js + Express (or Hono)</td><td>Fast, lightweight, same language as frontend</td></tr>
+    <tr><td>Database</td><td>PostgreSQL</td><td>Proven, strong relational queries for report generation, JSON support</td></tr>
+    <tr><td>ORM</td><td>Drizzle</td><td>Type-safe, lightweight, good migration tooling</td></tr>
+    <tr><td>File storage</td><td>S3 / R2 (Cloudflare)</td><td>Cheap, fast, CDN-backed photo delivery</td></tr>
+    <tr><td>Auth</td><td>Custom (PIN + JWT)</td><td>No off-the-shelf auth fits the PIN-based tradesman flow</td></tr>
+    <tr><td>Hosting</td><td>Railway / Fly.io / VPS</td><td>Simple deployment, auto-scaling, managed Postgres available</td></tr>
+    <tr><td>PDF generation</td><td>Puppeteer or @react-pdf</td><td>Phase 2 — generate inspection reports matching paper layouts</td></tr>
+  </table>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>11. API Design (Phase 1 endpoints)</h2>
+
+<div class="card">
+  <pre>
+# --- Auth ---
+POST   /api/auth/pin              # PIN login (returns JWT)
+POST   /api/auth/login             # Email/password login (managers)
+POST   /api/auth/refresh           # Refresh JWT
+GET    /api/auth/me                # Current user + company + team + site
+
+# --- Sites ---
+GET    /api/sites                  # List sites (filtered by company)
+POST   /api/sites                  # Create site
+GET    /api/sites/:id              # Site detail + teams + asset counts
+PATCH  /api/sites/:id              # Update site
+PATCH  /api/sites/:id/archive      # Archive site
+
+# --- Teams ---
+GET    /api/sites/:siteId/teams              # Teams at a site
+POST   /api/sites/:siteId/teams              # Create team
+PATCH  /api/teams/:id                        # Update team
+POST   /api/teams/:id/members                # Add person to team
+DELETE /api/teams/:id/members/:personId      # Remove person from team
+
+# --- People ---
+GET    /api/people                           # All people (company)
+POST   /api/people                           # Create person
+GET    /api/people/:id                       # Person detail + history
+PATCH  /api/people/:id                       # Update person
+POST   /api/people/:id/assign               # Assign to team + site
+
+# --- Assets ---
+GET    /api/assets                           # All assets (filterable)
+POST   /api/assets                           # Create asset + generate QR
+GET    /api/assets/:id                       # Asset detail + check history
+PATCH  /api/assets/:id                       # Update asset
+POST   /api/assets/:id/transfer              # Transfer to different site
+GET    /api/assets/qr/:code                  # Lookup by QR code
+
+# --- Checks ---
+GET    /api/checks                           # List checks (filterable)
+POST   /api/checks                           # Start a new check
+GET    /api/checks/:id                       # Check detail + items + photos
+PATCH  /api/checks/:id                       # Update check (add items)
+POST   /api/checks/:id/complete              # Complete + set result
+POST   /api/checks/:id/sign                  # Upload signature
+POST   /api/checks/:id/countersign           # Agent countersignature
+
+# --- Check Items ---
+POST   /api/checks/:id/items                # Batch create/update check items
+PATCH  /api/check-items/:id                  # Update single item
+
+# --- Defects ---
+GET    /api/defects                          # All open defects
+POST   /api/defects                          # Report defect
+PATCH  /api/defects/:id                      # Update / resolve defect
+
+# --- Photos ---
+POST   /api/photos/upload                    # Upload photo (multipart)
+
+# --- QR ---
+GET    /api/qr/:code                         # Public: resolve QR → asset
+GET    /api/assets/:id/qr-label              # Generate printable QR label PDF
+
+# --- Dashboard ---
+GET    /api/dashboard/overview               # Stats for manager overview
+GET    /api/dashboard/site/:id               # Stats for a single site
+GET    /api/dashboard/overdue                # Assets with overdue checks
+GET    /api/dashboard/calibrations           # Upcoming calibration dates
+  </pre>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>12. UI Screens (Phase 1)</h2>
+
+<div class="card">
+  <table>
+    <tr><th>Screen</th><th>Who sees it</th><th>Purpose</th></tr>
+    <tr><td>Login (PIN)</td><td>All</td><td>Enter 4-digit PIN</td></tr>
+    <tr><td>Login (Email)</td><td>Supervisors, Managers</td><td>Email + password for dashboard</td></tr>
+    <tr><td>Home / Scan</td><td>Operators</td><td>Big scan button, recent checks, today's outstanding</td></tr>
+    <tr><td>Check flow</td><td>Operators</td><td>Guided checklist with pass/fail/NA, photos, notes, signature</td></tr>
+    <tr><td>PUWER Grid</td><td>Supervisors</td><td>Weekly plant inspection grid (matches paper form)</td></tr>
+    <tr><td>Dashboard — Overview</td><td>Managers</td><td>All sites, summary stats, alerts</td></tr>
+    <tr><td>Dashboard — Site</td><td>Supervisors, Managers</td><td>Single site: teams, assets, today's checks, defects</td></tr>
+    <tr><td>Asset Register</td><td>Managers</td><td>All assets, filter, search, add new, generate QR</td></tr>
+    <tr><td>Asset Detail</td><td>All</td><td>Single asset: info, check history, current site, defects</td></tr>
+    <tr><td>People Directory</td><td>Managers</td><td>All people, team assignments, add/edit</td></tr>
+    <tr><td>Team View</td><td>Supervisors, Managers</td><td>Members of a team, their checks, performance</td></tr>
+    <tr><td>Site Management</td><td>Managers</td><td>Create/edit/archive sites</td></tr>
+    <tr><td>Defect Queue</td><td>Supervisors, Managers</td><td>Open defects, severity, resolution actions</td></tr>
+    <tr><td>Check History</td><td>All (scoped)</td><td>Filterable log of all inspections</td></tr>
+    <tr><td>Settings</td><td>Admin</td><td>Company details, template management</td></tr>
+  </table>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>13. Nuances & Edge Cases</h2>
+
+<p>The things that break apps in the real world.</p>
+
+<div class="card red">
+  <h3>Things we have to handle</h3>
+  <table>
+    <tr><th>Scenario</th><th>How we handle it</th></tr>
+    <tr><td>Operator starts a check, phone dies mid-way</td><td>Check saved in <code>in_progress</code> state. When they reopen the app, it offers to resume. Auto-saved every few seconds to IndexedDB.</td></tr>
+    <tr><td>Two operators scan the same asset at the same time</td><td>Both create separate check records. The dashboard flags duplicate checks for the same asset on the same day. Supervisor resolves which one counts.</td></tr>
+    <tr><td>Asset is moved to a new site mid-week during a PUWER check</td><td>The PUWER check keeps running at the original site for that week. Next week, the asset appears at the new site's PUWER grid.</td></tr>
+    <tr><td>New asset arrives on site, no QR sticker yet</td><td>Operator selects "Add new asset" from the app. Fills in details manually. QR sticker can be printed later. The asset is immediately available for checks.</td></tr>
+    <tr><td>Operator forgets their PIN</td><td>Supervisor can reset it from the dashboard. Operator gets a new PIN immediately.</td></tr>
+    <tr><td>Check completed offline, then connectivity returns while away from site</td><td>Check syncs with the site/team assignment that was current at the time of the check, not the current assignment. Timestamps are device-local.</td></tr>
+    <tr><td>Vehicle reg changes (replaced vehicle on same contract)</td><td>Old asset archived, new asset created. History stays separate. We don't overwrite.</td></tr>
+    <tr><td>Operator assigned to a team but isn't actually on site that day</td><td>No issue — assignments are persistent, not daily attendance. If they don't check anything that day, the dashboard shows them as "no activity" but doesn't flag it as an error.</td></tr>
+    <tr><td>Calibration date has passed but plant is still in use</td><td>Asset status doesn't auto-change. Dashboard shows a red "OVERDUE" badge. Manager gets a notification. It's their call whether to stand the kit down.</td></tr>
+    <tr><td>Defect marked as "critical" (brakes, steering)</td><td>Asset auto-flags to <code>defective</code> status. Can't clear the flag until the defect is resolved by a supervisor+. Prevents the asset showing as "available" on the dashboard.</td></tr>
+    <tr><td>The same form layout is used by multiple companies, but with slightly different fields</td><td>Templates are versioned and can be company-specific or global. Custom fields can be added without breaking existing check records.</td></tr>
+    <tr><td>Inspector asks for records for a specific week</td><td>Filter by week_ending. All three form types for that week are returned. PDF generation (Phase 2) produces forms matching the original paper layout.</td></tr>
+  </table>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>14. Phase 1 Build Order</h2>
+
+<p>What gets built first, second, third. Each step is deployable and testable.</p>
+
+<div class="card">
+  <h3>Sprint 1: Foundation (Week 1–2)</h3>
+  <ol>
+    <li>Database schema + migrations (all tables above)</li>
+    <li>API scaffolding: auth, CRUD for companies, sites, teams, people</li>
+    <li>PIN-based auth system</li>
+    <li>Frontend scaffold: PWA setup, routing, auth screens</li>
+    <li>Seed data: one company, 3 sites, 5 teams, 10 people, 20 assets</li>
+  </ol>
+
+  <h3>Sprint 2: Assets + QR (Week 3–4)</h3>
+  <ol>
+    <li>Asset CRUD + asset register screen</li>
+    <li>QR code generation + printable label PDF</li>
+    <li>QR code scanner (camera-based)</li>
+    <li>Asset detail screen with history placeholder</li>
+    <li>Asset transfer between sites</li>
+  </ol>
+
+  <h3>Sprint 3: Check Templates + Check Flow (Week 5–7)</h3>
+  <ol>
+    <li>Check template system: create templates 1, 2, and 3 with all items</li>
+    <li>Check creation workflow: scan → confirm → checklist → defect → sign → submit</li>
+    <li>Check items with pass/fail/NA + notes</li>
+    <li>PUWER weekly grid UI (the different flow)</li>
+    <li>Defect reporting from within a check</li>
+    <li>Digital signature capture</li>
+    <li>Photo capture + upload</li>
+  </ol>
+
+  <h3>Sprint 4: Dashboard + Offline (Week 8–9)</h3>
+  <ol>
+    <li>Manager dashboard: overview, site drill-down, stats</li>
+    <li>Supervisor dashboard: team view, today's outstanding, defect queue</li>
+    <li>Operator home screen: scan, recent checks, my defects</li>
+    <li>Service worker + offline IndexedDB storage</li>
+    <li>Sync queue with retry logic</li>
+    <li>Photo compression + offline photo queuing</li>
+  </ol>
+
+  <h3>Sprint 5: Polish + Testing (Week 10)</h3>
+  <ol>
+    <li>Cross-browser testing (Chrome, Safari, Samsung Internet)</li>
+    <li>On-device testing with real QR stickers</li>
+    <li>Performance pass: load times, offline boot</li>
+    <li>Data validation and error states</li>
+    <li>Edge case handling (all items from section 13)</li>
+    <li>UAT with client operators</li>
+  </ol>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>15. Data Seeding for Development</h2>
+
+<p>To build and test the app, we need realistic data from day one.</p>
+
+<div class="card">
+  <h3>Seed dataset</h3>
+  <pre>
+Company: "SAW Utilities Ltd"
+
+Sites:
+  - "M6 Junction 19 Resurfacing"      (active)
+  - "Stockport Town Centre Drainage"   (active)
+  - "A555 Bypass Cycle Lane"           (active)
+  - "Wilmslow Road Gas Main"           (archived)
+
+Teams (at M6 J19):
+  - "Day Shift Alpha"    — leader: Mike Edwards
+  - "Day Shift Bravo"    — leader: Dave Whitworth
+  - "Night Crew"         — leader: Steve Barlow
+
+Teams (at Stockport):
+  - "Main Gang"          — leader: Paul Massey
+  - "Sub — ABC Drainage" — leader: (external)
+
+People (sample):
+  Mike Edwards   | Supervisor | M6 J19, Day Shift Alpha
+  Dave Whitworth | Supervisor | M6 J19, Day Shift Bravo
+  Steve Barlow   | Supervisor | M6 J19, Night Crew
+  John Smith     | Operator   | M6 J19, Day Shift Alpha
+  Kev Fletcher   | Operator   | M6 J19, Day Shift Alpha
+  Ryan Hughes    | Operator   | M6 J19, Day Shift Bravo
+  Tommo Burns    | Operator   | M6 J19, Night Crew
+  Paul Massey    | Supervisor | Stockport, Main Gang
+  Lee Connolly   | Operator   | Stockport, Main Gang
+  Gary Owen      | Manager    | (unassigned — office)
+
+Assets (at M6 J19):
+  Ford Transit (GN73 XKP)  | Vehicle    | owned
+  Volvo FH 7.5T (BF71 RYT) | Vehicle   | owned      | weight: over_7_5t
+  CAT 320 Digger            | Plant      | GAP        | PLT-00482
+  JCB 3CX Backhoe           | Plant      | Speedy     | PLT-01209
+  Wacker Neuson Dumper       | Plant      | owned      | PLT-00891
+  Atlas Copco Generator      | Plant      | GAP        | PLT-00315
+  Hilti Breaker TE 3000     | Plant      | owned      | PLT-01050
+  Flatbed Trailer (T-101)   | Trailer    | owned
+  Work Lights (set of 4)    | Plant      | owned      | PLT-00402
+  Stihl TS 500i Saw         | Plant      | owned      | PLT-00677
+  </pre>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>16. Open Questions</h2>
+
+<div class="card amber">
+  <h3>To confirm with the client before build</h3>
+  <ol>
+    <li><strong>Branding:</strong> Which of the 10 brand options do they want? This affects the entire UI theme.</li>
+    <li><strong>Domain:</strong> Do they want chex.io / chex.app / getchex.com, or something else? This affects QR URLs.</li>
+    <li><strong>Notification preferences:</strong> Do supervisors want SMS alerts for critical defects, or is the dashboard sufficient for v1?</li>
+    <li><strong>Agent countersignature:</strong> Is this always required, or optional? The paper form has both driver and agent signature lines.</li>
+    <li><strong>Multiple companies:</strong> Is this for one company only in v1, or should we expose multi-tenancy from the start?</li>
+    <li><strong>Hosting budget:</strong> This determines whether we go managed (Railway/Fly, ~$20/mo) or VPS (~$10/mo, more setup).</li>
+  </ol>
+</div>
+
+<footer>
+  Chex — Implementation Plan v1.0 &middot; Internal working document &middot; 3 April 2026
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily-Chex — Build Plan</title>
+  <style>
+    :root{--bg:#0a0a0a;--card:#111113;--border:#1e1e21;--text:#e4e4e7;--muted:#71717a;--faint:#3f3f46;--yellow:#facc15;--yellow-dim:#a38a0a;--yellow-bg:rgba(250,204,21,0.08);--green:#22c55e;--green-bg:rgba(34,197,94,0.08);--red:#ef4444;--red-bg:rgba(239,68,68,0.08);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.08);--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.08)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:16px;max-width:820px;margin:0 auto}
+    header{text-align:center;padding:40px 0 32px;border-bottom:2px solid var(--yellow);margin-bottom:36px}
+    header h1{font-size:2rem;font-weight:800;letter-spacing:-0.5px;color:var(--yellow)}
+    header .sub{margin-top:6px;color:var(--muted);font-size:0.95rem}
+    header .meta{margin-top:14px;font-size:0.78rem;color:var(--faint)}
+    h2{font-size:1.3rem;font-weight:700;margin:40px 0 14px;color:var(--yellow);border-bottom:1px solid var(--border);padding-bottom:8px}
+    h3{font-size:1.05rem;font-weight:600;margin:22px 0 8px;color:var(--text)}
+    h4{font-size:0.92rem;font-weight:700;margin:14px 0 6px;color:var(--yellow)}
+    p,li{font-size:0.92rem}
+    p{margin-bottom:10px}
+    ul,ol{margin:8px 0 12px 20px}
+    li{margin-bottom:5px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin:16px 0}
+    .card.yellow{border-color:var(--yellow);background:var(--yellow-bg)}
+    .card.green{border-color:var(--green);background:var(--green-bg)}
+    .card.red{border-color:var(--red);background:var(--red-bg)}
+    .card.blue{border-color:var(--blue);background:var(--blue-bg)}
+    .card.amber{border-color:var(--amber);background:var(--amber-bg)}
+    .card h3,.card h4{margin-top:0}
+    table{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.85rem}
+    th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border)}
+    th{background:var(--card);font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)}
+    code{background:#1a1a2e;padding:1px 5px;border-radius:3px;font-size:0.84em;color:var(--yellow)}
+    pre{background:#0c0c14;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:0.8rem;margin:12px 0;line-height:1.5;border:1px solid var(--border)}
+    .badge{display:inline-block;font-size:0.7rem;font-weight:600;padding:2px 9px;border-radius:6px;margin-right:4px}
+    .badge.y{background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(250,204,21,0.2)}
+    .badge.g{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+    .badge.r{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+    .badge.b{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+    .badge.a{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,158,11,0.2)}
+    hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+    .step{background:var(--card);border:1px solid var(--border);border-radius:12px;margin:20px 0;overflow:hidden}
+    .step-head{display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid var(--border);cursor:pointer}
+    .step-num{width:40px;height:40px;border-radius:10px;background:var(--yellow);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;flex-shrink:0}
+    .step-title{font-size:1rem;font-weight:700;flex:1}
+    .step-badges{display:flex;gap:4px;flex-wrap:wrap}
+    .step-body{padding:22px}
+    .step-body ul{margin-left:16px}
+    .step-body li{margin-bottom:6px;color:#d4d4d8}
+    .dep{font-size:0.78rem;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+    .dep strong{color:var(--amber)}
+    .note{background:var(--yellow-bg);border-left:3px solid var(--yellow);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:0.88rem}
+    .note strong{color:var(--yellow)}
+    .free-tag{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);border:1px solid rgba(34,197,94,0.2);color:var(--green);font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:6px}
+    footer{text-align:center;padding:28px 0;font-size:0.78rem;color:var(--faint);border-top:1px solid var(--border);margin-top:40px}
+    @media(max-width:480px){body{padding:12px}header h1{font-size:1.5rem}h2{font-size:1.1rem}.step-head{padding:14px 16px}.step-body{padding:16px}}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ DAILY-CHEX — Build Plan</h1>
+  <p class="sub">Phased build breakdown. Military-control aesthetic. DeWalt black &amp; yellow.</p>
+  <div class="meta">v1.0 &middot; 3 April 2026 &middot; Tell me "begin step X" to start each phase</div>
+</header>
+
+<!-- ============================================ -->
+<h2>Design Direction</h2>
+
+<div class="card yellow">
+  <h3>Military ops control room meets DeWalt</h3>
+  <ul>
+    <li><strong>Palette:</strong> Jet black background (#0a0a0a), carbon dark surfaces (#111113), DeWalt yellow (#facc15) accents, signal green (#22c55e) for pass, alert red (#ef4444) for fail/critical</li>
+    <li><strong>Typography:</strong> Bold industrial sans-serif — Rubik or similar with tight tracking for headers, clean readable body text</li>
+    <li><strong>Feel:</strong> Dark CRT glow, scanline textures, dashboard HUD elements, data-dense cards, subtle yellow outlines on active elements</li>
+    <li><strong>Animations:</strong> Smooth spring-based transitions, elements that slide/scale in with weight, haptic-feeling button presses (scale-down + shadow shift), staggered card reveals, pulse effects on live data</li>
+    <li><strong>Map:</strong> Dark-themed map tiles, yellow/green/red markers, pulsing "live" dots for active users, connection lines between operator and asset</li>
+    <li><strong>Cards:</strong> Overdue checks = red glow border, all-clear = green tick + subtle green glow, pending = amber pulse</li>
+    <li><strong>Mobile:</strong> Touch-optimised, large tap targets, swipe actions, bottom-tab navigation</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>Map &amp; GPS — Free Build Confirmed</h2>
+
+<div class="card green">
+  <h3><span class="free-tag">✓ 100% FREE</span> &nbsp; All components are zero-cost</h3>
+  <table>
+    <tr><th>Component</th><th>Solution</th><th>Cost</th><th>Notes</th></tr>
+    <tr><td>Map library</td><td><strong>Leaflet.js</strong></td><td>Free (BSD-2)</td><td>40kB, mobile-first, huge plugin ecosystem. Marker clusters, heatmaps, polygons all free plugins.</td></tr>
+    <tr><td>Map tiles</td><td><strong>OpenStreetMap</strong> (dev) / <strong>Mapbox free tier</strong> (prod)</td><td>Free up to 50k loads/mo</td><td>OSM for development, Mapbox free tier for production. 50k map loads/month is more than enough for this use case.</td></tr>
+    <tr><td>GPS location</td><td><strong>Browser Geolocation API</strong></td><td>Free (built-in)</td><td>3–10m accuracy on mobile with GPS. No API key, no service, no cost. Every mobile browser supports it.</td></tr>
+    <tr><td>Marker clusters</td><td><strong>Leaflet.markercluster</strong></td><td>Free (MIT)</td><td>Groups nearby markers into clusters at zoom-out levels.</td></tr>
+    <tr><td>Heatmap</td><td><strong>Leaflet.heat</strong></td><td>Free (BSD-2)</td><td>Heatmap layer for check activity density.</td></tr>
+    <tr><td>Dark map theme</td><td><strong>Mapbox dark style</strong> or <strong>CartoDB dark_matter</strong></td><td>Free</td><td>CartoDB dark tiles are free with attribution. Perfect for the military aesthetic.</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>How GPS tracking works in Daily-Chex</h3>
+  <ol>
+    <li><strong>On QR scan / check start:</strong> App calls <code>navigator.geolocation.getCurrentPosition()</code> with <code>enableHighAccuracy: true</code>. Captures lat, lng, accuracy to the check record.</li>
+    <li><strong>On check complete:</strong> Second GPS fix recorded. Now we have start + end coordinates.</li>
+    <li><strong>Asset location vs operator location:</strong> The map shows where the operator was when they scanned the QR code. If the operator is within the site boundary, it confirms "on-site check". If not, the dashboard flags "off-site check" with an amber indicator.</li>
+    <li><strong>Live map view:</strong> Dashboard shows a Leaflet map with markers for recent checks (last 24h). Yellow pin = check done today, green = all-pass, red = defect found. Clicking a marker shows the check details.</li>
+    <li><strong>No background tracking:</strong> We only capture GPS at the moment of scan/check action. No continuous tracking. This is privacy-friendly and avoids battery drain.</li>
+  </ol>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>Build Steps — 10 Phases</h2>
+
+<p>Each step is self-contained, testable, and deployable. Tell me <strong>"begin step X"</strong> to start any phase.</p>
+
+<!-- STEP 1 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">1</div>
+    <div>
+      <div class="step-title">Project Scaffold &amp; Design System</div>
+      <div class="step-badges">
+        <span class="badge y">Foundation</span>
+        <span class="badge b">Frontend</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>Set up the project structure, install dependencies, and build the design system — the visual foundation everything sits on.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>React + Vite + TypeScript project in <code>projects/chex/app/</code></li>
+      <li>PWA manifest + service worker setup</li>
+      <li>Tailwind CSS with the Daily-Chex DeWalt theme (black/yellow tokens)</li>
+      <li>Design system: buttons, cards, badges, inputs, status indicators</li>
+      <li>Layout shell: sidebar nav (desktop), bottom tab bar (mobile)</li>
+      <li>Page transitions and micro-interactions (spring animations, button press effects)</li>
+      <li>Dark military-control aesthetic applied globally</li>
+      <li>Responsive breakpoints: mobile-first, tablet, desktop</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>A running app shell with no functionality but the full visual language — someone can open it and say "that looks like Daily-Chex".</p>
+    <div class="dep"><strong>Dependencies:</strong> None — this is the starting point.</div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">2</div>
+    <div>
+      <div class="step-title">Backend &amp; Database Foundation</div>
+      <div class="step-badges">
+        <span class="badge y">Foundation</span>
+        <span class="badge a">Backend</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>The API server, database schema, and core data model.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>Express (or Hono) API server in <code>projects/chex/server/</code></li>
+      <li>PostgreSQL schema — all tables from the implementation plan: companies, sites, teams, people, assets, checks, check_items, check_photos, defects, check_templates, check_template_items</li>
+      <li>Drizzle ORM setup with migrations</li>
+      <li>Seed script with realistic data (SAW Utilities example from the plan)</li>
+      <li>Health check endpoint</li>
+      <li>CORS and basic middleware (JSON parsing, error handling)</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>A running API server at <code>localhost:3200</code> with a seeded database. Can query <code>/api/health</code> and see data.</p>
+    <div class="dep"><strong>Dependencies:</strong> None — can be built in parallel with Step 1.</div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">3</div>
+    <div>
+      <div class="step-title">Auth System (PIN + Email)</div>
+      <div class="step-badges">
+        <span class="badge a">Backend</span>
+        <span class="badge b">Frontend</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>PIN-based login for operators, email/password for managers, JWT tokens, device trust.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>API: <code>POST /api/auth/pin</code> — PIN login, returns JWT</li>
+      <li>API: <code>POST /api/auth/login</code> — email/password login for managers</li>
+      <li>API: <code>GET /api/auth/me</code> — current user + company + team + site context</li>
+      <li>JWT middleware with role-based guards (operator / supervisor / manager / admin)</li>
+      <li>PIN hashing (bcrypt) and uniqueness within company</li>
+      <li>Frontend: PIN entry screen (big number pad, industrial feel)</li>
+      <li>Frontend: Email login screen (for managers/supervisors)</li>
+      <li>Frontend: Auth context provider, protected routes</li>
+      <li>Device trust: store company token in localStorage for quick re-auth</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>Operators can enter a 4-digit PIN and land on their home screen. Managers can log in with email and see the dashboard shell.</p>
+    <div class="dep"><strong>Depends on:</strong> Step 1 (frontend), Step 2 (backend).</div>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">4</div>
+    <div>
+      <div class="step-title">Site, Team &amp; People Management</div>
+      <div class="step-badges">
+        <span class="badge a">Backend</span>
+        <span class="badge b">Frontend</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>The organisational hierarchy — sites, teams within sites, people assigned to teams. This is the backbone that everything else hangs off.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>API: Full CRUD for sites, teams, people + assignment endpoints</li>
+      <li>Frontend — <strong>Sites page:</strong> list of active sites, site cards showing team count + asset count + recent activity</li>
+      <li>Frontend — <strong>Site detail:</strong> teams at this site, people in each team, quick-add team/person modals</li>
+      <li>Frontend — <strong>People directory:</strong> all operators/supervisors, their current team/site assignment, search + filter</li>
+      <li>Frontend — <strong>Team view:</strong> members list, team leader badge, assign/unassign people</li>
+      <li>Drag-to-reassign: move a person between teams within a site</li>
+      <li>Cross-site transfer for people</li>
+      <li>Archive sites (preserve history, hide from active views)</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>A manager can create sites, add teams to sites, add people to teams, and see the organisational structure in the dashboard.</p>
+    <div class="dep"><strong>Depends on:</strong> Step 2 (database), Step 3 (auth for access control).</div>
+  </div>
+</div>
+
+<!-- STEP 5 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">5</div>
+    <div>
+      <div class="step-title">Asset Register &amp; QR Codes</div>
+      <div class="step-badges">
+        <span class="badge a">Backend</span>
+        <span class="badge b">Frontend</span>
+        <span class="badge g">QR</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>The asset register (vehicles, trailers, plant), QR code generation, QR scanning, and asset transfer between sites.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>API: Asset CRUD, QR lookup (<code>GET /api/assets/qr/:code</code>), asset transfer</li>
+      <li>QR code generation: unique <code>CHX-XXXXXXXX</code> codes</li>
+      <li>QR label PDF: printable sticker sheets (62mm × 30mm labels)</li>
+      <li>Frontend — <strong>Asset register:</strong> filterable list (by site, type, status, supplier), search by name/reg/plant ID</li>
+      <li>Frontend — <strong>Asset detail:</strong> full info card, current site, supplier, calibration dates, photo, check history placeholder</li>
+      <li>Frontend — <strong>Add asset form:</strong> type selector (vehicle/trailer/plant), conditional fields (reg for vehicles, weight class, supplier, etc.)</li>
+      <li>Frontend — <strong>QR scanner:</strong> camera-based scanning using html5-qrcode, resolves to asset detail</li>
+      <li>Frontend — <strong>QR sticker preview:</strong> shows the label before printing, batch print for multiple assets</li>
+      <li>Asset transfer: move to different site with timestamp logging</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>Manager can add assets, generate QR stickers, print them. Operator can scan a QR code with their phone and see the asset.</p>
+    <div class="dep"><strong>Depends on:</strong> Step 4 (sites for asset assignment).</div>
+  </div>
+</div>
+
+<!-- STEP 6 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">6</div>
+    <div>
+      <div class="step-title">Check Templates &amp; Check Flow</div>
+      <div class="step-badges">
+        <span class="badge a">Backend</span>
+        <span class="badge b">Frontend</span>
+        <span class="badge r">Core Feature</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>The heart of the app. The three check templates, the guided check flow, pass/fail/NA for each item, defect reporting, digital signatures, photo capture, and GPS location capture.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>API: Check lifecycle — create, add items, complete, sign, countersign</li>
+      <li>API: Check templates with items, sections, conditional display rules</li>
+      <li>Three templates seeded: Vehicle & Trailer Weekly, PUWER Weekly, Vehicle Daily</li>
+      <li>Frontend — <strong>Check flow (guided):</strong>
+        <ol>
+          <li>Scan QR / select asset → confirm identity + site + team</li>
+          <li>GPS capture at start (Browser Geolocation API)</li>
+          <li>Mileage entry (if vehicle)</li>
+          <li>Checklist: pass/fail/NA per item, with expandable notes + camera on fail</li>
+          <li>Conditional sections (7.5T+, towing/lifting) based on asset properties</li>
+          <li>Defect summary screen with severity + description + photos</li>
+          <li>Digital signature pad (signature_pad library)</li>
+          <li>GPS capture at completion</li>
+          <li>Submit with confirmation screen</li>
+        </ol>
+      </li>
+      <li>Frontend — <strong>PUWER weekly grid:</strong> the different flow for plant inspections (site-level, Mon–Sun grid per asset)</li>
+      <li>Photo capture: compress to 1200px/200KB, store locally until sync</li>
+      <li>Auto-save in progress to prevent data loss</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>An operator can scan a QR code, run through the full check, take photos of defects, sign off, and submit. The PUWER weekly grid matches the paper form experience.</p>
+    <div class="dep"><strong>Depends on:</strong> Step 5 (assets + QR scanning).</div>
+  </div>
+</div>
+
+<!-- STEP 7 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">7</div>
+    <div>
+      <div class="step-title">Defect Management</div>
+      <div class="step-badges">
+        <span class="badge a">Backend</span>
+        <span class="badge b">Frontend</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>Defect lifecycle — from report through to resolution. Cards showing severity, assignment, status.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>API: Defect CRUD, status transitions (open → in_progress → resolved / accepted)</li>
+      <li>Auto-create defects from failed check items</li>
+      <li>Critical defect auto-flags asset as <code>defective</code></li>
+      <li>Frontend — <strong>Defect queue:</strong> card-based view sorted by severity, filterable by site/team/asset</li>
+      <li>Frontend — <strong>Defect detail:</strong> description, photos, linked check, action taken, resolution log</li>
+      <li>Frontend — <strong>Defect resolution:</strong> supervisor marks as resolved, adds action taken notes</li>
+      <li>Overdue defect highlighting (open > 24h = amber, > 72h = red glow)</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>Defects flow from checks into a management queue. Supervisors can triage, resolve, and track defect lifecycle.</p>
+    <div class="dep"><strong>Depends on:</strong> Step 6 (checks create defects).</div>
+  </div>
+</div>
+
+<!-- STEP 8 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">8</div>
+    <div>
+      <div class="step-title">Dashboard &amp; Map View</div>
+      <div class="step-badges">
+        <span class="badge b">Frontend</span>
+        <span class="badge g">Map</span>
+        <span class="badge r">Key Feature</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>The military-control dashboard. Interactive map showing where checks happened, status cards, overdue alerts, site overview.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>API: Dashboard stats endpoints (overview, per-site, overdue, calibrations)</li>
+      <li>Frontend — <strong>Command Overview (manager):</strong>
+        <ul>
+          <li>Top stats row: total assets, checks today, open defects, overdue count, calibration warnings</li>
+          <li>Interactive map (Leaflet + dark tiles): markers for every check in the last 24h, colour-coded (green=pass, red=defect, yellow=in-progress)</li>
+          <li>Map cluster view at wide zoom, individual markers at close zoom</li>
+          <li>Click marker → popup with check details, operator name, timestamp, pass/fail result</li>
+          <li>Site boundary polygons drawn on the map (optional GPS fencing)</li>
+          <li>Pulsing dot for "live" — checks submitted in the last 5 minutes</li>
+        </ul>
+      </li>
+      <li>Frontend — <strong>Status cards grid:</strong>
+        <ul>
+          <li>Cards per site: name, check completion rate (bar), defect count, team count</li>
+          <li>Overdue checks card: red-bordered, lists assets + how long overdue</li>
+          <li>Calibration card: amber, upcoming calibrations with countdown</li>
+          <li>Defect summary card: severity breakdown (critical/high/medium/low)</li>
+        </ul>
+      </li>
+      <li>Frontend — <strong>Supervisor site view:</strong> same concepts but scoped to their site, with team filter</li>
+      <li>Frontend — <strong>Operator home:</strong> big "Scan QR" button, their recent checks, assigned assets needing checks today</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>A manager opens the dashboard and gets a real-time ops-centre view: map with pins showing every check, cards showing what's overdue, what has defects, what's coming up for calibration.</p>
+    <div class="dep"><strong>Depends on:</strong> Step 6 (checks with GPS data), Step 7 (defect status for cards).</div>
+  </div>
+</div>
+
+<!-- STEP 9 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">9</div>
+    <div>
+      <div class="step-title">Offline / PWA &amp; Sync</div>
+      <div class="step-badges">
+        <span class="badge b">Frontend</span>
+        <span class="badge a">Backend</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>Make the whole thing work without internet. Service worker, IndexedDB caching, offline QR scanning, sync queue.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>Service worker: caches app shell, templates, asset register</li>
+      <li>IndexedDB (via Dexie.js): local asset register, offline check storage, photo blob storage</li>
+      <li>Offline QR lookup: matches against cached asset register</li>
+      <li>Sync queue: checks completed offline queue for upload when connectivity returns</li>
+      <li>Conflict resolution: last-write-wins for checks, server-wins for defect resolution</li>
+      <li>Sync status indicator: "2 checks pending sync" badge in header</li>
+      <li>Photo compression pipeline: resize to 1200px max, ~200KB, store in IndexedDB</li>
+      <li>PWA install prompt: "Add Daily-Chex to Home Screen"</li>
+      <li>Background sync using Service Worker Background Sync API where available</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>An operator in a trench with no signal can scan a QR code, complete a full check with photos, sign off, and it syncs when they come back to the surface.</p>
+    <div class="dep"><strong>Depends on:</strong> Step 6 (check flow to take offline), Step 5 (asset register to cache).</div>
+  </div>
+</div>
+
+<!-- STEP 10 -->
+<div class="step">
+  <div class="step-head">
+    <div class="step-num">10</div>
+    <div>
+      <div class="step-title">Polish, Testing &amp; Launch Prep</div>
+      <div class="step-badges">
+        <span class="badge g">QA</span>
+        <span class="badge y">Launch</span>
+      </div>
+    </div>
+  </div>
+  <div class="step-body">
+    <p>Cross-browser testing, edge case handling, performance pass, and getting ready for real-world use.</p>
+    <h4>What gets built</h4>
+    <ul>
+      <li>Cross-browser testing: Chrome, Safari mobile, Samsung Internet, Firefox</li>
+      <li>Real QR sticker testing with printed labels on actual equipment</li>
+      <li>Performance audit: Lighthouse scores, load time on 3G, offline boot time</li>
+      <li>Edge cases from the implementation plan (phone dying mid-check, duplicate scans, etc.)</li>
+      <li>Error states and empty states for every screen</li>
+      <li>Loading skeletons (not spinners — skeletons feel faster)</li>
+      <li>Haptic feedback on mobile (navigator.vibrate for button presses)</li>
+      <li>Final animation polish pass: staggered reveals, page transitions, micro-interactions</li>
+      <li>Logo integration (once client uploads)</li>
+      <li>Deployment to production hosting</li>
+      <li>UAT with client operators on a real site</li>
+    </ul>
+    <h4>Deliverable</h4>
+    <p>A production-ready app that works on every phone, in every signal condition, and feels slick enough that tradesmen actually want to use it.</p>
+    <div class="dep"><strong>Depends on:</strong> All previous steps.</div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ============================================ -->
+<h2>Summary</h2>
+
+<div class="card">
+  <table>
+    <tr><th>Step</th><th>Name</th><th>Depends on</th><th>Key output</th></tr>
+    <tr><td><span class="badge y">1</span></td><td>Scaffold &amp; Design System</td><td>—</td><td>Themed app shell, component library</td></tr>
+    <tr><td><span class="badge y">2</span></td><td>Backend &amp; Database</td><td>—</td><td>API server, full schema, seed data</td></tr>
+    <tr><td><span class="badge y">3</span></td><td>Auth System</td><td>1 + 2</td><td>PIN login, email login, JWT, role guards</td></tr>
+    <tr><td><span class="badge y">4</span></td><td>Sites, Teams, People</td><td>2 + 3</td><td>Org hierarchy management</td></tr>
+    <tr><td><span class="badge y">5</span></td><td>Assets &amp; QR Codes</td><td>4</td><td>Asset register, QR gen/scan, labels</td></tr>
+    <tr><td><span class="badge y">6</span></td><td>Check Templates &amp; Flow</td><td>5</td><td>Full check lifecycle with GPS + photos + signatures</td></tr>
+    <tr><td><span class="badge y">7</span></td><td>Defect Management</td><td>6</td><td>Defect queue, severity triage, resolution</td></tr>
+    <tr><td><span class="badge y">8</span></td><td>Dashboard &amp; Map</td><td>6 + 7</td><td>Ops-centre dashboard, interactive Leaflet map</td></tr>
+    <tr><td><span class="badge y">9</span></td><td>Offline / PWA</td><td>5 + 6</td><td>Full offline capability, sync queue</td></tr>
+    <tr><td><span class="badge y">10</span></td><td>Polish &amp; Launch</td><td>All</td><td>Production-ready, tested, deployed</td></tr>
+  </table>
+</div>
+
+<div class="note">
+  <strong>How to proceed: </strong> Say <strong>"begin step 1"</strong> and I'll build the project scaffold and design system. Each step takes one or two sessions depending on complexity. Steps 1 and 2 can be built in parallel if you want speed.
+</div>
+
+<footer>DAILY-CHEX &middot; Build Plan v1.0 &middot; 3 April 2026</footer>
+
+</body>
+</html>
