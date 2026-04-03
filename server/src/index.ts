@@ -50,7 +50,7 @@ const clientDist = path.resolve(__dirname, '../../app/dist')
 app.use(express.static(clientDist))
 
 // SPA fallback: any non-API route serves index.html
-app.get('*', (_req, res, next) => {
+app.get('/{*splat}', (_req, res, next) => {
   if (_req.path.startsWith('/api')) return next()
   res.sendFile(path.join(clientDist, 'index.html'))
 })
