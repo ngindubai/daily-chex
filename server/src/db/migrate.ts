@@ -8,10 +8,12 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/daily_chex'
+const isRemote = connectionString.includes('neon.tech') || connectionString.includes('sslmode')
 
 async function runMigrations() {
-  console.log('Connecting to database for migrations...')
-  const client = postgres(connectionString, { max: 1 })
+  const host = connectionString.replace(/\/\/.*:.*@/, '//***:***@').split('/')[2]
+  console.log(`Connecting to database for migrations... (host: ${host}, ssl: ${isRemote})`)
+  const client = postgres(connectionString, { max: 1, ssl: isRemote ? 'require' : false })
   const db = drizzle(client)
 
   // Resolve drizzle folder relative to this file's location (dist/db/ -> ../../drizzle)
