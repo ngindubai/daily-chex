@@ -2,12 +2,11 @@ services:
   - type: web
     name: daily-chex
     plan: free
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    runtime: node
+    buildCommand: npm run render-build
+    startCommand: npm run render-start
     envVars:
       - key: DATABASE_URL
         sync: false
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: "3200"
