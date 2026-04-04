@@ -1,12 +1,13 @@
 /**
- * Safe seed — only inserts data if the company table is empty.
+ * Safe seed — only inserts data if the database needs it.
  * Runs at startup in production so the demo always has data.
+ * Checks both that data exists AND that PINs are properly bcrypt-hashed.
  * Uses its own DB connection (not the shared singleton) so it can close cleanly.
  */
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { companies } from './schema/index.js'
-import { count } from 'drizzle-orm'
+import { companies, people } from './schema/index.js'
+import { count, sql as dsql } from 'drizzle-orm'
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/daily_chex'
 const isRemote = connectionString.includes('neon.tech') || connectionString.includes('sslmode')
@@ -16,13 +17,27 @@ async function run() {
   const db = drizzle(client)
 
   try {
-    const [result] = await db.select({ count: count() }).from(companies)
-    const isEmpty = (result?.count ?? 0) === 0
+    const [companyResult] = await db.select({ count: count() }).from(companies)
+    const companyCount = companyResult?.count ?? 0
 
-    if (!isEmpty) {
-      console.log('Database already has data, skipping seed.')
-      await client.end()
-      return
+    if (companyCount > 0) {
+      // Companies exist — verify people with properly hashed PINs also exist
+      // bcrypt hashes are 60 chars; plain text PINs are 4 chars
+      const [pinCheck] = await db
+        .select({ count: count() })
+        .from(people)
+        .where(dsql`LENGTH(${people.pin}) >= 50`)
+
+      if ((pinCheck?.count ?? 0) > 0) {
+        console.log('Database has valid data, skipping seed.')
+        await client.end()
+        return
+      }
+
+      // Data exists but PINs are missing or unhashed — wipe and reseed
+      console.log('Database has corrupt data (unhashed PINs). Clearing for reseed...')
+      await client`TRUNCATE companies CASCADE`
+      console.log('Tables cleared.')
     }
   } catch {
     console.log('Could not check database state, skipping seed.')
@@ -32,7 +47,7 @@ async function run() {
 
   await client.end()
 
-  console.log('Empty database detected, seeding...')
+  console.log('Seeding database...')
   // Dynamic import runs the full seed (which uses its own connection via db/index.js)
   await import('./seed.js')
 }
