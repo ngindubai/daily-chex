@@ -9,9 +9,10 @@ import { companies } from './schema/index.js'
 import { count } from 'drizzle-orm'
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/daily_chex'
+const isRemote = connectionString.includes('neon.tech') || connectionString.includes('sslmode')
 
 async function run() {
-  const client = postgres(connectionString, { max: 1 })
+  const client = postgres(connectionString, { max: 1, ssl: isRemote ? 'require' : false })
   const db = drizzle(client)
 
   try {
