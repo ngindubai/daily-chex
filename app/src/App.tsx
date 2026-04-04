@@ -74,7 +74,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginRoute />} />
-          <Route path="/{*splat}" element={<ProtectedRoutes />} />
+          <Route path="/*" element={<ProtectedRoutes />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
