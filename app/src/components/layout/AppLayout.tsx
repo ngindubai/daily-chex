@@ -9,17 +9,21 @@ import {
   Building2,
   AlertTriangle,
   ClipboardCheck,
+  ClipboardList,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
 
 const mainNav = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/map', icon: MapPin, label: 'Map' },
   { to: '/scan', icon: ScanLine, label: 'Scan' },
   { to: '/checks', icon: ClipboardCheck, label: 'Checks' },
+  { to: '/tasks', icon: ClipboardList, label: 'Tasks' },
   { to: '/defects', icon: AlertTriangle, label: 'Defects' },
   { to: '/assets', icon: Package, label: 'Assets' },
   { to: '/sites', icon: Building2, label: 'Sites' },
@@ -37,6 +41,11 @@ const mobileNav = [
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
+  const { user, logout } = useAuth()
+
+  const initials = user
+    ? `${user.firstName[0]}${user.lastName[0]}`
+    : 'DC'
 
   return (
     <div className="flex h-screen overflow-hidden bg-chex-black">
@@ -78,7 +87,27 @@ export function AppLayout() {
         </nav>
 
         {/* Bottom status bar */}
-        <div className="p-4 border-t border-chex-border">
+        <div className="p-4 border-t border-chex-border space-y-3">
+          {user && (
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-full bg-chex-raised border border-chex-border flex items-center justify-center text-[10px] font-bold text-chex-yellow">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-chex-text truncate">
+                  {user.firstName} {user.lastName}
+                </p>
+                <p className="text-[10px] text-chex-faint capitalize">{user.role}</p>
+              </div>
+              <button
+                onClick={logout}
+                title="Sign out"
+                className="p-1 rounded-[var(--radius-sm)] text-chex-muted hover:text-chex-red hover:bg-chex-raised transition-colors cursor-pointer"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-chex-green opacity-75 animate-ping" />
@@ -178,11 +207,23 @@ export function AppLayout() {
             <div className="hidden lg:block" />
           </div>
 
-          {/* Right side — will hold user avatar + notifications later */}
+          {/* Right side — user avatar + logout */}
           <div className="flex items-center gap-2">
+            {user && (
+              <span className="hidden sm:block text-xs text-chex-muted">
+                {user.firstName} {user.lastName}
+              </span>
+            )}
             <div className="h-8 w-8 rounded-full bg-chex-raised border border-chex-border flex items-center justify-center text-xs font-bold text-chex-yellow">
-              DC
+              {initials}
             </div>
+            <button
+              onClick={logout}
+              title="Sign out"
+              className="p-1.5 rounded-[var(--radius-sm)] text-chex-muted hover:text-chex-red hover:bg-chex-raised transition-colors cursor-pointer"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </header>
 

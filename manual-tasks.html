@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily-Chex — Manual Tasks</title>
+  <style>
+    :root{--bg:#0a0a0a;--card:#111113;--border:#1e1e21;--text:#e4e4e7;--muted:#71717a;--faint:#3f3f46;--yellow:#facc15;--yellow-bg:rgba(250,204,21,0.08);--green:#22c55e;--green-bg:rgba(34,197,94,0.08);--red:#ef4444;--red-bg:rgba(239,68,68,0.08);--blue:#3b82f6;--blue-bg:rgba(59,130,246,0.08);--amber:#f59e0b;--amber-bg:rgba(245,158,11,0.08)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:20px;max-width:780px;margin:0 auto}
+    header{text-align:center;padding:40px 0 28px;border-bottom:2px solid var(--yellow);margin-bottom:32px}
+    header h1{font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;color:var(--yellow)}
+    header .sub{margin-top:6px;color:var(--muted);font-size:0.9rem}
+    header .meta{margin-top:12px;font-size:0.75rem;color:var(--faint)}
+
+    .task{background:var(--card);border:1px solid var(--border);border-radius:12px;margin:24px 0;overflow:hidden;transition:border-color 0.2s}
+    .task.done{border-color:var(--green);opacity:0.6}
+    .task-head{display:flex;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+    .task-head:hover{background:rgba(250,204,21,0.03)}
+    .task-num{width:36px;height:36px;border-radius:9px;background:var(--yellow);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;flex-shrink:0}
+    .task.done .task-num{background:var(--green)}
+    .task-title{font-size:0.95rem;font-weight:700;flex:1}
+    .task-tag{font-size:0.68rem;font-weight:600;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:0.5px}
+    .tag-render{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+    .tag-github{background:rgba(255,255,255,0.05);color:#ccc;border:1px solid rgba(255,255,255,0.1)}
+    .tag-neon{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+    .tag-local{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,158,11,0.2)}
+    .chevron{color:var(--faint);transition:transform 0.2s;font-size:1.2rem}
+    .task.open .chevron{transform:rotate(90deg)}
+
+    .task-body{padding:20px;display:none}
+    .task.open .task-body{display:block}
+
+    .step-list{counter-reset:steps;list-style:none;margin:0;padding:0}
+    .step-list li{counter-increment:steps;position:relative;padding:12px 12px 12px 48px;margin:8px 0;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;font-size:0.88rem;transition:background 0.15s}
+    .step-list li::before{content:counter(steps);position:absolute;left:12px;top:12px;width:24px;height:24px;border-radius:6px;background:var(--yellow-bg);color:var(--yellow);font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid rgba(250,204,21,0.15)}
+    .step-list li:hover{background:rgba(250,204,21,0.03)}
+    .step-list li.click-step{cursor:default}
+
+    .click{display:inline;background:rgba(250,204,21,0.12);color:var(--yellow);padding:1px 6px;border-radius:4px;font-weight:600;font-size:0.82rem;white-space:nowrap}
+    .type{display:inline;background:rgba(59,130,246,0.12);color:var(--blue);padding:1px 6px;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.8rem;white-space:nowrap}
+    .warn{display:inline;background:var(--red-bg);color:var(--red);padding:1px 6px;border-radius:4px;font-weight:600;font-size:0.82rem}
+
+    .note{background:var(--yellow-bg);border-left:3px solid var(--yellow);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:0.85rem}
+    .note strong{color:var(--yellow)}
+    .note.blue{background:var(--blue-bg);border-left-color:var(--blue)}
+    .note.blue strong{color:var(--blue)}
+
+    code{background:#1a1a2e;padding:1px 5px;border-radius:3px;font-size:0.82em;color:var(--yellow);font-family:'Consolas','Courier New',monospace}
+    pre{background:#0c0c14;color:#e2e8f0;padding:14px;border-radius:8px;overflow-x:auto;font-size:0.78rem;margin:10px 0;line-height:1.5;border:1px solid var(--border);font-family:'Consolas','Courier New',monospace}
+
+    .check-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+    .check-row:last-child{border-bottom:none}
+    .check-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--yellow);cursor:pointer;flex-shrink:0}
+    .check-row label{font-size:0.88rem;cursor:pointer;flex:1}
+    .check-row.done label{text-decoration:line-through;color:var(--faint)}
+
+    .progress-bar{width:100%;height:8px;background:var(--border);border-radius:4px;margin:20px 0 8px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--yellow);border-radius:4px;transition:width 0.4s ease}
+    .progress-text{font-size:0.75rem;color:var(--muted);text-align:right}
+
+    .creds-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.82rem}
+    .creds-table th,.creds-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+    .creds-table th{background:rgba(255,255,255,0.03);font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)}
+
+    footer{text-align:center;padding:24px 0;font-size:0.75rem;color:var(--faint);border-top:1px solid var(--border);margin-top:40px}
+    @media(max-width:540px){body{padding:12px}header h1{font-size:1.4rem}.task-head{padding:14px 16px}.task-body{padding:16px}.step-list li{padding-left:42px;font-size:0.84rem}}
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🔧 MANUAL TASKS — DAILY-CHEX</h1>
+  <p class="sub">Step-by-step instructions for tasks that need human hands.<br>Click each task to expand. Check off as you complete them.</p>
+  <div class="meta">Last updated: 4 April 2026 &middot; Tracks across all build steps</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">0 / 0 complete</div>
+</header>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 1: Add JWT_SECRET to Render -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task open" id="task-1">
+  <div class="task-head" onclick="toggleTask(1)">
+    <div class="task-num">1</div>
+    <div class="task-title">Add JWT_SECRET to Render</div>
+    <span class="task-tag tag-render">RENDER</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> The auth system signs JWTs with a secret key. Without this env var, login will crash with "JWT_SECRET is not set".</div>
+
+    <p><strong>When:</strong> After Step 3 (Auth) code is pushed.</p>
+
+    <ol class="step-list">
+      <li>Open <a href="https://dashboard.render.com" target="_blank" style="color:var(--blue)">dashboard.render.com</a> and log in</li>
+      <li>Click <span class="click">daily-chex</span> under your services list</li>
+      <li>Click <span class="click">Environment</span> in the left sidebar</li>
+      <li>Click <span class="click">+ Add Environment Variable</span></li>
+      <li>In the <strong>Key</strong> field, type: <span class="type">JWT_SECRET</span></li>
+      <li>In the <strong>Value</strong> field, paste a strong random string. Generate one by opening a terminal and running:
+        <pre>node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"</pre>
+        Copy the output and paste it as the value.
+      </li>
+      <li>Click <span class="click">Save Changes</span></li>
+      <li>Render will auto-redeploy. Wait for the deploy to complete (green tick).</li>
+    </ol>
+
+    <div class="note blue"><strong>Verify:</strong> Open <code>https://daily-chex.onrender.com/api/health</code> — should return <code>{"status":"ok"}</code>. Then test login at the app homepage.</div>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t1-check" onchange="updateProgress()">
+        <label for="t1-check">JWT_SECRET added and deploy succeeded</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 2: Reset Database (re-seed with hashed PINs) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-2">
+  <div class="task-head" onclick="toggleTask(2)">
+    <div class="task-num">2</div>
+    <div class="task-title">Reset Database — Re-seed with Hashed PINs</div>
+    <span class="task-tag tag-neon">NEON</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> The old seed stored PINs as plain text. The new seed hashes them with bcrypt. Auth will fail unless the DB is re-seeded.</div>
+
+    <p><strong>When:</strong> After Task 1 (JWT_SECRET) and after the Step 3 code is deployed.</p>
+
+    <h4 style="color:var(--yellow);margin:16px 0 8px">Option A: Nuke &amp; re-seed via Neon console</h4>
+    <ol class="step-list">
+      <li>Open <a href="https://console.neon.tech" target="_blank" style="color:var(--blue)">console.neon.tech</a> and log in</li>
+      <li>Click your project (the one with <code>ep-tiny-unit-ant8rdsp</code>)</li>
+      <li>Click <span class="click">SQL Editor</span> in the left sidebar</li>
+      <li>Paste and run this SQL to wipe all data:
+        <pre>TRUNCATE check_photos, check_items, checks, defects,
+         check_template_items, check_templates,
+         assets, people, teams, sites, companies
+CASCADE;</pre>
+      </li>
+      <li>The next Render deploy will re-run <code>seed-safe.js</code> (it checks if companies table is empty). Trigger a manual deploy:
+        <ul style="margin:6px 0 0 16px;list-style:disc">
+          <li>Go to Render → <span class="click">daily-chex</span> → <span class="click">Manual Deploy</span> → <span class="click">Deploy latest commit</span></li>
+        </ul>
+      </li>
+      <li>Wait for deploy to finish. Check logs for <code>✓ 6 people created</code>.</li>
+    </ol>
+
+    <h4 style="color:var(--yellow);margin:16px 0 8px">Option B: Quick reset via terminal</h4>
+    <ol class="step-list">
+      <li>Open a terminal in the <code>projects/chex/server</code> directory</li>
+      <li>Run with the Neon DATABASE_URL:
+        <pre>DATABASE_URL="postgresql://neondb_owner:npg_Zo4pGVf6weXE@ep-tiny-unit-ant8rdsp.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require" npx tsx src/db/seed.ts</pre>
+        <span class="warn">⚠ This will fail if data already exists (unique constraints). Use Option A first to TRUNCATE.</span>
+      </li>
+    </ol>
+
+    <div class="note blue"><strong>Verify:</strong> Go to <code>https://daily-chex.onrender.com</code>, select SAW Utilities, enter PIN <code>1234</code> → should log in as Mark Johnson (Manager).</div>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t2-check" onchange="updateProgress()">
+        <label for="t2-check">Database re-seeded with hashed PINs</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 3: Push Step 3 code to GitHub -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-3">
+  <div class="task-head" onclick="toggleTask(3)">
+    <div class="task-num">3</div>
+    <div class="task-title">Push Step 3 Code to GitHub</div>
+    <span class="task-tag tag-github">GITHUB</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> Render auto-deploys from the <code>master</code> branch. Push the auth code to trigger deployment.</div>
+
+    <p><strong>When:</strong> After you've verified the build works locally (server <code>tsc</code> + app <code>vite build</code> both pass).</p>
+
+    <ol class="step-list">
+      <li>Open a terminal in the <code>projects/chex</code> directory</li>
+      <li>Stage all changes:
+        <pre>git add -A</pre>
+      </li>
+      <li>Commit:
+        <pre>git commit -m "Step 3: Auth system — PIN + email login, JWT, protected routes"</pre>
+      </li>
+      <li>Push to master:
+        <pre>git push origin master</pre>
+      </li>
+      <li>Render will auto-detect the push and start a new deploy. Watch the Render dashboard for a green tick.</li>
+    </ol>
+
+    <div class="note"><strong>Order matters:</strong> Do Task 1 (JWT_SECRET) <em>before</em> this push, otherwise the deploy will start without the secret and auth will break.</div>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t3-check" onchange="updateProgress()">
+        <label for="t3-check">Code pushed and Render deploy succeeded</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 4: Test Login Flows Live -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-4">
+  <div class="task-head" onclick="toggleTask(4)">
+    <div class="task-num">4</div>
+    <div class="task-title">Test Login Flows on Live Site</div>
+    <span class="task-tag tag-render">RENDER</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> Confirm both PIN and email login work end-to-end on the deployed site.</div>
+
+    <p><strong>When:</strong> After Tasks 1, 2, and 3 are all complete.</p>
+
+    <h4 style="color:var(--yellow);margin:16px 0 8px">Test credentials</h4>
+    <table class="creds-table">
+      <thead>
+        <tr><th>Method</th><th>Input</th><th>Expected User</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PIN</td><td><code>1234</code></td><td>Mark Johnson</td><td>Manager</td></tr>
+        <tr><td>PIN</td><td><code>5678</code></td><td>Dave Patel</td><td>Supervisor</td></tr>
+        <tr><td>PIN</td><td><code>1111</code></td><td>Steve Wilson</td><td>Operator</td></tr>
+        <tr><td>PIN</td><td><code>2222</code></td><td>Tom Baker</td><td>Supervisor</td></tr>
+        <tr><td>PIN</td><td><code>3333</code></td><td>Ryan Clark</td><td>Operator</td></tr>
+        <tr><td>PIN</td><td><code>4444</code></td><td>James Morgan</td><td>Supervisor</td></tr>
+        <tr><td>Email</td><td><code>mark.johnson@sawutilities.co.uk</code> / <code>SawAdmin2025!</code></td><td>Mark Johnson</td><td>Manager</td></tr>
+        <tr><td>Email</td><td><code>james.morgan@sawutilities.co.uk</code> / <code>SawSuper2025!</code></td><td>James Morgan</td><td>Supervisor</td></tr>
+      </tbody>
+    </table>
+
+    <ol class="step-list">
+      <li>Open <a href="https://daily-chex.onrender.com" target="_blank" style="color:var(--blue)">daily-chex.onrender.com</a></li>
+      <li>You should see the login screen. Click <span class="click">SAW Utilities</span></li>
+      <li><strong>PIN test:</strong> Click <span class="click">Enter PIN</span>, tap <span class="click">1</span> <span class="click">2</span> <span class="click">3</span> <span class="click">4</span> — should auto-submit and land on Dashboard as Mark Johnson</li>
+      <li>Check the sidebar bottom shows <strong>Mark Johnson</strong> / <strong>Manager</strong></li>
+      <li>Click the <span class="click">logout icon</span> (top-right arrow icon) — should return to login</li>
+      <li><strong>Email test:</strong> Click <span class="click">Manager Login</span>, enter email + password from the table above, click <span class="click">Sign In</span></li>
+      <li>Should land on Dashboard. Logout again.</li>
+      <li><strong>Negative test:</strong> Enter PIN <code>9999</code> — should show "Invalid PIN" error</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t4a-check" onchange="updateProgress()">
+        <label for="t4a-check">PIN login works (tested 1234)</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t4b-check" onchange="updateProgress()">
+        <label for="t4b-check">Email login works (tested mark.johnson@)</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t4c-check" onchange="updateProgress()">
+        <label for="t4c-check">Logout works and returns to login screen</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t4d-check" onchange="updateProgress()">
+        <label for="t4d-check">Invalid PIN shows error message</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- MORE TASKS ADDED AS BUILD PROGRESSES -->
+<!-- ═══════════════════════════════════════════ -->
+
+<div id="future-tasks">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 5: Push Step 4 code -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-5">
+  <div class="task-head" onclick="toggleTask(5)">
+    <div class="task-num">5</div>
+    <div class="task-title">Push Step 4 — Sites, Teams &amp; People</div>
+    <span class="task-tag tag-github">GITHUB</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>What changed:</strong> Sites page now fetches real data with team/people/asset counts. People page live with search, role filter, and Add Person form. People API no longer leaks PINs or password hashes. Sites API returns enriched counts. Vite proxy added for dev.</div>
+
+    <ol class="step-list">
+      <li>Open a terminal in <code>projects/chex</code></li>
+      <li>Stage: <pre>git add -A</pre></li>
+      <li>Commit: <pre>git commit -m "Step 4: Sites & People management — live data, CRUD, enriched APIs"</pre></li>
+      <li>Push: <pre>git push origin master</pre></li>
+      <li>Watch Render for green deploy tick</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t5-check" onchange="updateProgress()">
+        <label for="t5-check">Step 4 pushed and deployed</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 6: Push Step 5 code -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-6">
+  <div class="task-head" onclick="toggleTask(6)">
+    <div class="task-num">6</div>
+    <div class="task-title">Push Step 5 — Assets &amp; QR Codes</div>
+    <span class="task-tag tag-github">GITHUB</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>What changed:</strong> Assets page now shows real data with search, type/site filters, and Add Asset form (conditional fields per type). Asset detail page with QR display, status controls, site transfer. QR scanner with live camera + manual code entry. QR label print page (select assets → print sticker sheet). Asset transfer API endpoint.</div>
+
+    <ol class="step-list">
+      <li>Open a terminal in <code>projects/chex</code></li>
+      <li>Stage: <pre>git add -A</pre></li>
+      <li>Commit: <pre>git commit -m "Step 5: Asset register, QR scanner, QR labels, asset detail + transfer"</pre></li>
+      <li>Push: <pre>git push origin master</pre></li>
+      <li>Watch Render for green deploy tick</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t6-check" onchange="updateProgress()">
+        <label for="t6-check">Step 5 pushed and deployed</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 7: Test QR scanning on phone -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-7">
+  <div class="task-head" onclick="toggleTask(7)">
+    <div class="task-num">7</div>
+    <div class="task-title">Test QR Scanning on a Phone</div>
+    <span class="task-tag tag-render">RENDER</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> QR camera scanning only works on HTTPS (which Render provides). It needs a real phone camera to test properly — can't be automated.</div>
+
+    <p><strong>When:</strong> After Task 6 is complete (Step 5 deployed).</p>
+
+    <ol class="step-list">
+      <li>On your phone, open <a href="https://daily-chex.onrender.com" target="_blank" style="color:var(--blue)">daily-chex.onrender.com</a></li>
+      <li>Log in with PIN <code>1234</code> (Mark Johnson)</li>
+      <li>Tap <span class="click">Scan</span> in the bottom navigation bar</li>
+      <li>Tap <span class="click">Open Camera</span> — your phone should ask for camera permission. Allow it.</li>
+      <li>Print or display a QR code from the <span class="click">Assets → Labels</span> page on a computer screen, then point your phone camera at it</li>
+      <li>The scanner should read the code and navigate directly to the asset's detail page</li>
+      <li>Also test <span class="click">Enter Code Manually</span> — type a code like <code>CHX-XXXXXXXX</code> from an existing asset and tap Look Up</li>
+    </ol>
+
+    <div class="note blue"><strong>Tip:</strong> To get a QR code to scan, go to Assets on desktop, click any asset, and you'll see the QR code displayed. Take a screenshot to show to your phone camera.</div>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t7a-check" onchange="updateProgress()">
+        <label for="t7a-check">Camera QR scan works (navigates to asset)</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t7b-check" onchange="updateProgress()">
+        <label for="t7b-check">Manual code entry works</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t7c-check" onchange="updateProgress()">
+        <label for="t7c-check">Label print page generates printable QR stickers</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 8: Push Step 6 code -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-8">
+  <div class="task-head" onclick="toggleTask(8)">
+    <div class="task-num">8</div>
+    <div class="task-title">Push Step 6 — Check Templates &amp; Check Flow</div>
+    <span class="task-tag tag-github">GITHUB</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>What changed:</strong> Checks page now shows real data with search/filter. Full guided check flow: select asset → pick template → checklist with pass/fail/NA per item (conditional sections for 7.5T+) → defect summary → digital signature → GPS capture → submit. Check detail page shows completed checks with items, signature, and GPS. Asset detail page now shows check history and "Start Check" button.</div>
+
+    <ol class="step-list">
+      <li>Open a terminal in <code>projects/chex</code></li>
+      <li>Stage: <pre>git add -A</pre></li>
+      <li>Commit: <pre>git commit -m "Step 6: Check flow — guided checklist, signature pad, defect summary, GPS"</pre></li>
+      <li>Push: <pre>git push origin master</pre></li>
+      <li>Watch Render for green deploy tick</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t8-check" onchange="updateProgress()">
+        <label for="t8-check">Step 6 pushed and deployed</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TASK 9: Test Check Flow on Phone -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-9">
+  <div class="task-head" onclick="toggleTask(9)">
+    <div class="task-num">9</div>
+    <div class="task-title">Test Check Flow on Live Site</div>
+    <span class="task-tag tag-render">RENDER</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> The check flow uses GPS, camera, and signature pad — all need testing on a real device with HTTPS.</div>
+
+    <p><strong>When:</strong> After Task 8 is complete (Step 6 deployed).</p>
+
+    <ol class="step-list">
+      <li>Open <a href="https://daily-chex.onrender.com" target="_blank" style="color:var(--blue)">daily-chex.onrender.com</a> on your phone</li>
+      <li>Log in with PIN <code>1111</code> (Steve Wilson — Operator)</li>
+      <li>Tap <span class="click">Checks</span> → <span class="click">New Check</span></li>
+      <li>Select any vehicle (e.g. Ford Transit Custom #1)</li>
+      <li>Optionally enter a starting mileage, then select <span class="click">Vehicle Daily Check Sheet</span></li>
+      <li>Go through the checklist — tap ✓ (pass), ✗ (fail), or — (N/A) for each item</li>
+      <li>Mark at least one item as <span class="click">Fail</span> and type a defect description</li>
+      <li>Tap <span class="click">View Defects</span> → confirm defects listed → tap <span class="click">Sign Off</span></li>
+      <li>Draw your signature in the signature pad</li>
+      <li>Tap <span class="click">Submit Check</span> — should show green "Check Submitted" screen</li>
+      <li>Go to <span class="click">Checks</span> list — the new check should appear with a red "Fail" badge</li>
+      <li>Tap it to view the full check detail with all items and your signature</li>
+    </ol>
+
+    <div class="note blue"><strong>Also test:</strong> Go to an asset detail page → tap "Start Check" → it should pre-select that asset and skip to template selection.</div>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t9a-check" onchange="updateProgress()">
+        <label for="t9a-check">Full check flow completes (all items → sign → submit)</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t9b-check" onchange="updateProgress()">
+        <label for="t9b-check">Failed items show defect summary screen</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t9c-check" onchange="updateProgress()">
+        <label for="t9c-check">Check detail shows items, result, and signature</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t9d-check" onchange="updateProgress()">
+        <label for="t9d-check">GPS location captured (visible in check detail)</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 10: Push Step 7 code -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-10">
+  <div class="task-head" onclick="toggleTask(10)">
+    <div class="task-num">10</div>
+    <div class="task-title">Push Step 7 (Defect Management) to GitHub</div>
+    <span class="task-tag tag-github">GITHUB</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>What changed:</strong> Real defect list page (search, severity/status filters, overdue highlighting), defect detail page with resolution workflow, auto-create defects from failed check items, critical defects auto-flag assets as defective.</div>
+
+    <ol class="step-list">
+      <li><code>cd projects/chex</code></li>
+      <li><code>git add -A</code></li>
+      <li><code>git commit -m "feat: step 7 — defect management (real pages, auto-create, resolution flow)"</code></li>
+      <li><code>git push origin master</code></li>
+      <li>Render auto-deploys from master — wait for build to finish in dashboard</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t10a-check" onchange="updateProgress()">
+        <label for="t10a-check">Code pushed to GitHub</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t10b-check" onchange="updateProgress()">
+        <label for="t10b-check">Render deploy succeeded</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 11: Test Defect Management on Live Site -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-11">
+  <div class="task-head" onclick="toggleTask(11)">
+    <div class="task-num">11</div>
+    <div class="task-title">Test Defect Management on Live Site</div>
+    <span class="task-tag tag-render">RENDER</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> Verify the defect auto-creation from checks and the resolution workflow works end-to-end on your phone.</div>
+
+    <p><strong>When:</strong> After Task 10 is complete (Step 7 deployed).</p>
+
+    <ol class="step-list">
+      <li>Open <a href="https://daily-chex.onrender.com" target="_blank" style="color:var(--blue)">daily-chex.onrender.com</a></li>
+      <li>Log in with PIN <code>1111</code> (Operator) and do a new check — fail at least one item</li>
+      <li>Submit the check, then go to <span class="click">Defects</span></li>
+      <li>Confirm the failed items created defect entries automatically</li>
+      <li>Tap a defect to open the detail page</li>
+      <li>Check the linked asset and linked check links work</li>
+      <li>Tap <span class="click">Start Work</span> to move status to "In Progress"</li>
+      <li>Type action notes and tap <span class="click">Save Notes</span></li>
+      <li>Tap <span class="click">Mark Resolved</span></li>
+      <li>Log out and log in as supervisor (PIN <code>0000</code>) if available, or use same user</li>
+      <li>On the resolved defect, tap <span class="click">Accept Resolution</span></li>
+      <li>Test severity filter and status filter on the defects list</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t11a-check" onchange="updateProgress()">
+        <label for="t11a-check">Defects auto-created from failed check items</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t11b-check" onchange="updateProgress()">
+        <label for="t11b-check">Defect detail shows correct asset/check links</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t11c-check" onchange="updateProgress()">
+        <label for="t11c-check">Full resolution workflow: Open → In Progress → Resolved → Accepted</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t11d-check" onchange="updateProgress()">
+        <label for="t11d-check">Overdue highlighting visible (open defects > 24h get amber ring)</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 12: Push Step 8 code -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-12">
+  <div class="task-head" onclick="toggleTask(12)">
+    <div class="task-num">12</div>
+    <div class="task-title">Push Step 8 (Dashboard &amp; Map) to GitHub</div>
+    <span class="task-tag tag-github">GITHUB</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>What changed:</strong> Real dashboard with live API stats (total assets, checks today, open defects, crew count, site breakdown, calibration warnings, defect severity breakdown). Operator gets simplified home with big QR scan button + recent checks. Leaflet interactive map with dark CARTO tiles, colour-coded markers (green=pass, red=fail, yellow pulsing=live), popups with check details.</div>
+
+    <ol class="step-list">
+      <li><code>cd projects/chex</code></li>
+      <li><code>git add -A</code></li>
+      <li><code>git commit -m "feat: step 8 — real dashboard + leaflet map (live stats, GPS markers, operator home)"</code></li>
+      <li><code>git push origin master</code></li>
+      <li>Render auto-deploys — wait for build in dashboard</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t12a-check" onchange="updateProgress()">
+        <label for="t12a-check">Code pushed to GitHub</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t12b-check" onchange="updateProgress()">
+        <label for="t12b-check">Render deploy succeeded</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 13: Test Dashboard & Map on Live Site -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="task" id="task-13">
+  <div class="task-head" onclick="toggleTask(13)">
+    <div class="task-num">13</div>
+    <div class="task-title">Test Dashboard &amp; Map on Live Site</div>
+    <span class="task-tag tag-render">RENDER</span>
+    <span class="chevron">▸</span>
+  </div>
+  <div class="task-body">
+    <div class="note"><strong>Why:</strong> Verify live stats, site cards, map markers, and the operator home screen all work with real data.</div>
+
+    <p><strong>When:</strong> After Task 12 is complete (Step 8 deployed).</p>
+
+    <ol class="step-list">
+      <li>Open <a href="https://daily-chex.onrender.com" target="_blank" style="color:var(--blue)">daily-chex.onrender.com</a></li>
+      <li>Log in as <strong>manager</strong> (PIN <code>0000</code> for Steve Wilson or whichever manager account)</li>
+      <li>Confirm the Command Overview shows real stats (assets, checks today, defects, crew)</li>
+      <li>Check site cards show correct team/asset counts and check progress bars</li>
+      <li>Tap the map card → confirm Leaflet map loads with dark tiles</li>
+      <li>If you did checks with GPS, confirm markers appear at correct locations</li>
+      <li>Click a marker → popup shows asset name, operator, pass/fail, "View check" link</li>
+      <li>Log out and log in as <strong>operator</strong> (PIN <code>1111</code>)</li>
+      <li>Confirm operator sees the simplified home: big "Scan QR Code" button + recent checks</li>
+      <li>Tap QR scan button → confirm it navigates to the scanner</li>
+    </ol>
+
+    <div style="margin-top:16px">
+      <div class="check-row">
+        <input type="checkbox" id="t13a-check" onchange="updateProgress()">
+        <label for="t13a-check">Manager dashboard shows real live stats</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t13b-check" onchange="updateProgress()">
+        <label for="t13b-check">Leaflet map loads with dark tiles</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t13c-check" onchange="updateProgress()">
+        <label for="t13c-check">Map markers appear for GPS checks (or "No GPS data" message if none)</label>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="t13d-check" onchange="updateProgress()">
+        <label for="t13d-check">Operator home shows scan button + recent checks</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  DAILY-CHEX Manual Tasks &middot; Updated as the build progresses &middot; Check boxes are saved in your browser
+</footer>
+
+<script>
+  // Toggle task open/closed
+  function toggleTask(n) {
+    const el = document.getElementById('task-' + n)
+    if (el) el.classList.toggle('open')
+  }
+
+  // Count all checkboxes and update progress
+  function updateProgress() {
+    const all = document.querySelectorAll('input[type="checkbox"]')
+    const checked = document.querySelectorAll('input[type="checkbox"]:checked')
+    const pct = all.length ? Math.round((checked.length / all.length) * 100) : 0
+    document.getElementById('progressFill').style.width = pct + '%'
+    document.getElementById('progressText').textContent = checked.length + ' / ' + all.length + ' complete'
+
+    // Save state
+    const state = {}
+    all.forEach(cb => { state[cb.id] = cb.checked })
+    localStorage.setItem('chex-manual-tasks', JSON.stringify(state))
+
+    // Mark parent tasks as done
+    document.querySelectorAll('.task').forEach(task => {
+      const boxes = task.querySelectorAll('input[type="checkbox"]')
+      const allDone = boxes.length > 0 && [...boxes].every(b => b.checked)
+      task.classList.toggle('done', allDone)
+    })
+  }
+
+  // Restore state on load
+  (function() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('chex-manual-tasks') || '{}')
+      Object.entries(saved).forEach(([id, val]) => {
+        const el = document.getElementById(id)
+        if (el) el.checked = val
+      })
+    } catch(e) {}
+    updateProgress()
+  })()
+</script>
+
+</body>
+</html>

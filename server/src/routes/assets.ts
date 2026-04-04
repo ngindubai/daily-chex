@@ -36,6 +36,18 @@ assetsRouter.get('/', async (req, res) => {
   }
 })
 
+// Lookup asset by QR code (MUST be before /:id to avoid path conflict)
+assetsRouter.get('/qr/:code', async (req, res) => {
+  try {
+    const [row] = await db.select().from(assets).where(eq(assets.qrCode, req.params.code))
+    if (!row) return res.status(404).json({ error: 'Asset not found for QR code' })
+    res.json(row)
+  } catch (err) {
+    console.error('Error looking up QR:', err)
+    res.status(500).json({ error: 'Failed to look up QR code' })
+  }
+})
+
 // Get asset by ID
 assetsRouter.get('/:id', async (req, res) => {
   try {
@@ -45,18 +57,6 @@ assetsRouter.get('/:id', async (req, res) => {
   } catch (err) {
     console.error('Error getting asset:', err)
     res.status(500).json({ error: 'Failed to get asset' })
-  }
-})
-
-// Lookup asset by QR code
-assetsRouter.get('/qr/:code', async (req, res) => {
-  try {
-    const [row] = await db.select().from(assets).where(eq(assets.qrCode, req.params.code))
-    if (!row) return res.status(404).json({ error: 'Asset not found for QR code' })
-    res.json(row)
-  } catch (err) {
-    console.error('Error looking up QR:', err)
-    res.status(500).json({ error: 'Failed to look up QR code' })
   }
 })
 
@@ -110,5 +110,24 @@ assetsRouter.patch('/:id', async (req, res) => {
   } catch (err) {
     console.error('Error updating asset:', err)
     res.status(500).json({ error: 'Failed to update asset' })
+  }
+})
+
+// Transfer asset to a different site
+assetsRouter.post('/:id/transfer', async (req, res) => {
+  try {
+    const { siteId } = req.body
+    if (!siteId) return res.status(400).json({ error: 'siteId is required' })
+
+    const [row] = await db
+      .update(assets)
+      .set({ siteId, updatedAt: new Date() })
+      .where(eq(assets.id, req.params.id))
+      .returning()
+    if (!row) return res.status(404).json({ error: 'Asset not found' })
+    res.json(row)
+  } catch (err) {
+    console.error('Error transferring asset:', err)
+    res.status(500).json({ error: 'Failed to transfer asset' })
   }
 })

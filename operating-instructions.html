@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Chex — Operating Instructions</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    :root {
+      --black: #0a0a0a;
+      --surface: #141414;
+      --raised: #1a1a1a;
+      --border: #262626;
+      --yellow: #facc15;
+      --yellow-dim: #facc1520;
+      --text: #e5e5e5;
+      --muted: #a3a3a3;
+      --faint: #525252;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Rubik', system-ui, sans-serif;
+      background: var(--black);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white; color: #1a1a1a; }
+      .toc-sidebar { display: none; }
+      .main-content { margin-left: 0 !important; max-width: 100% !important; }
+      .card { border-color: #ddd !important; background: #f9f9f9 !important; }
+      .hero { background: #1a1a1a !important; }
+      .nav-header { display: none; }
+      .step-number { background: #1a1a1a !important; color: #facc15 !important; }
+    }
+
+    /* Top header */
+    .nav-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      z-index: 100;
+    }
+    .nav-header .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .nav-header .logo span { color: var(--yellow); }
+    .nav-header .badge {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--yellow-dim);
+      color: var(--yellow);
+      margin-left: 12px;
+    }
+
+    /* TOC sidebar */
+    .toc-sidebar {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      bottom: 0;
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 20px 0;
+      z-index: 90;
+    }
+    .toc-sidebar::-webkit-scrollbar { width: 4px; }
+    .toc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .toc-heading {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--faint);
+      padding: 0 20px;
+      margin-bottom: 12px;
+    }
+    .toc-link {
+      display: block;
+      padding: 6px 20px;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .toc-link:hover {
+      color: var(--text);
+      background: var(--raised);
+      border-left-color: var(--yellow);
+    }
+    .toc-link.sub { padding-left: 36px; font-size: 12px; }
+
+    /* Main content */
+    .main-content {
+      margin-left: 260px;
+      margin-top: 56px;
+      max-width: 900px;
+      padding: 0 40px 80px;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--raised) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      margin: 32px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, var(--yellow-dim) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+    .hero h1 span { color: var(--yellow); }
+    .hero p {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 600px;
+    }
+    .hero .version {
+      margin-top: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--faint);
+    }
+
+    /* Sections */
+    section { margin-top: 48px; }
+    section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      scroll-margin-top: 80px;
+    }
+    section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 28px 0 12px;
+      color: var(--yellow);
+      scroll-margin-top: 80px;
+    }
+    section h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 20px 0 8px;
+      color: var(--text);
+    }
+    section p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .card.yellow { border-color: var(--yellow); border-left-width: 3px; }
+    .card.green { border-color: var(--green); border-left-width: 3px; }
+    .card.red { border-color: var(--red); border-left-width: 3px; }
+    .card.amber { border-color: var(--amber); border-left-width: 3px; }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    /* Step cards */
+    .step-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .step-card {
+      display: flex;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+    }
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--yellow);
+      color: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .step-card .step-body h4 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .step-card .step-body p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--faint);
+      background: var(--surface);
+    }
+    td { color: var(--muted); }
+    tr:hover td { background: var(--raised); }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge.yellow { background: var(--yellow-dim); color: var(--yellow); }
+    .badge.green { background: #22c55e20; color: var(--green); }
+    .badge.red { background: #ef444420; color: var(--red); }
+    .badge.amber { background: #f59e0b20; color: var(--amber); }
+    .badge.gray { background: #52525220; color: var(--faint); }
+
+    /* Code blocks */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--raised);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--yellow);
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    pre code { background: none; padding: 0; }
+
+    /* Lists */
+    ul, ol {
+      margin: 8px 0 16px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    li { margin-bottom: 6px; }
+    li strong { color: var(--text); }
+
+    /* Callouts */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      border-radius: var(--radius);
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .callout.tip {
+      background: var(--yellow-dim);
+      border: 1px solid #facc1540;
+    }
+    .callout.warning {
+      background: #f59e0b15;
+      border: 1px solid #f59e0b40;
+    }
+    .callout.danger {
+      background: #ef444415;
+      border: 1px solid #ef444440;
+    }
+    .callout-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .callout-body { color: var(--muted); line-height: 1.5; }
+    .callout-body strong { color: var(--text); }
+
+    /* Role tags */
+    .role-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .role-tag.operator { background: #3b82f620; color: #60a5fa; }
+    .role-tag.supervisor { background: #8b5cf620; color: #a78bfa; }
+    .role-tag.manager { background: var(--yellow-dim); color: var(--yellow); }
+    .role-tag.admin { background: #ef444420; color: var(--red); }
+
+    /* Keyboard shortcuts */
+    kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: var(--raised);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      color: var(--text);
+    }
+
+    /* Grid layout for role cards */
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .role-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+    .role-card .role-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    .role-card .role-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .role-card .role-desc {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .role-card .role-auth {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--faint);
+    }
+
+    /* Priority indicators */
+    .priority-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .priority-dot.urgent { background: var(--red); animation: pulse 1.5s infinite; }
+    .priority-dot.high { background: var(--red); }
+    .priority-dot.normal { background: var(--yellow); }
+    .priority-dot.low { background: var(--faint); }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .toc-sidebar { display: none; }
+      .main-content { margin-left: 0; padding: 0 20px 60px; }
+      .hero { padding: 32px 24px; }
+      .hero h1 { font-size: 24px; }
+      .role-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+
+    /* Divider */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 32px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fixed header -->
+  <header class="nav-header">
+    <div class="logo">daily-<span>chex</span></div>
+    <span class="badge">Operating Manual</span>
+  </header>
+
+  <!-- TOC sidebar -->
+  <nav class="toc-sidebar">
+    <div class="toc-heading">Contents</div>
+    <a href="#overview" class="toc-link">Overview</a>
+    <a href="#roles" class="toc-link">User Roles</a>
+    <a href="#login" class="toc-link">Logging In</a>
+    <a href="#login-pin" class="toc-link sub">PIN Login (Operators)</a>
+    <a href="#login-email" class="toc-link sub">Email Login (Managers)</a>
+    <a href="#dashboard" class="toc-link">Dashboard</a>
+    <a href="#dash-operator" class="toc-link sub">Operator View</a>
+    <a href="#dash-manager" class="toc-link sub">Manager View</a>
+    <a href="#scanning" class="toc-link">QR Scanning</a>
+    <a href="#check-flow" class="toc-link">Performing a Check</a>
+    <a href="#check-step1" class="toc-link sub">Select Asset</a>
+    <a href="#check-step2" class="toc-link sub">Select Template</a>
+    <a href="#check-step3" class="toc-link sub">Checklist</a>
+    <a href="#check-step4" class="toc-link sub">Summary</a>
+    <a href="#check-step5" class="toc-link sub">Sign & Submit</a>
+    <a href="#tasks" class="toc-link">Task Assignments</a>
+    <a href="#task-create" class="toc-link sub">Creating Tasks</a>
+    <a href="#task-complete" class="toc-link sub">Completing Tasks</a>
+    <a href="#defects" class="toc-link">Defect Management</a>
+    <a href="#defect-auto" class="toc-link sub">Auto-Created Defects</a>
+    <a href="#defect-lifecycle" class="toc-link sub">Defect Lifecycle</a>
+    <a href="#assets" class="toc-link">Asset Management</a>
+    <a href="#asset-types" class="toc-link sub">Asset Types</a>
+    <a href="#asset-qr" class="toc-link sub">QR Labels</a>
+    <a href="#asset-transfer" class="toc-link sub">Transfers</a>
+    <a href="#sites" class="toc-link">Sites, Teams & People</a>
+    <a href="#map" class="toc-link">Map & GPS Tracking</a>
+    <a href="#checks-history" class="toc-link">Check History</a>
+    <a href="#templates" class="toc-link">Check Templates</a>
+    <a href="#troubleshooting" class="toc-link">Troubleshooting</a>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Hero -->
+    <div class="hero" id="overview">
+      <h1>Daily <span>Chex</span> Operating Manual</h1>
+      <p>
+        Complete operating instructions for the Daily Chex safety inspection platform.
+        Covers all features for operators, supervisors, managers, and administrators.
+      </p>
+      <div class="version">Version 1.0 &mdash; Updated July 2025</div>
+    </div>
+
+    <p>
+      Daily Chex is a digital safety inspection system for construction plant, vehicles, and trailers.
+      Field operatives use QR codes and mobile devices to perform structured safety checks,
+      while managers maintain oversight through real-time dashboards, GPS tracking, and task assignments.
+    </p>
+
+    <!-- ==================== ROLES ==================== -->
+    <section id="roles">
+      <h2>User Roles</h2>
+      <p>The system has four roles, each with different access levels and login methods.</p>
+
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-icon">&#128736;</div>
+          <div class="role-name">Operator</div>
+          <div class="role-desc">Field worker. Performs daily checks, reports defects.</div>
+          <div class="role-auth"><span class="badge yellow">PIN Login</span></div>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">&#128221;</div>
+          <div class="role-name">Supervisor</div>
+          <div class="role-desc">Team lead. Reviews checks, manages defects, assigns tasks.</div>
+          <div class="role-auth"><span class="badge yellow">PIN Login</span></div>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">&#128188;</div>
+          <div class="role-name">Manager</div>
+          <div class="role-desc">Full dashboard access. Creates users, sites, teams, assets.</div>
+          <div class="role-auth"><span class="badge green">Email Login</span></div>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">&#9881;</div>
+          <div class="role-name">Admin</div>
+          <div class="role-desc">System administrator. Full access to all functions.</div>
+          <div class="role-auth"><span class="badge red">Email Login</span></div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Operator</th>
+            <th>Supervisor</th>
+            <th>Manager</th>
+            <th>Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Perform checks</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>View own checks</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>Report defects</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>View all checks</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>Assign tasks</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>Manage defects</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>Manage assets</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>Manage sites &amp; teams</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>Manage people</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          <tr><td>Full dashboard &amp; stats</td><td>&mdash;</td><td>&mdash;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ==================== LOGIN ==================== -->
+    <section id="login">
+      <h2>Logging In</h2>
+      <p>There are two login methods depending on your role.</p>
+
+      <h3 id="login-pin">PIN Login (Operators &amp; Supervisors)</h3>
+      <p>Operators and supervisors log in using a 4-digit PIN code. This is designed for fast access on shared site devices.</p>
+
+      <div class="step-flow">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <h4>Select Company</h4>
+            <p>Choose your company from the dropdown on the login screen.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <h4>Tap "Enter PIN"</h4>
+            <p>A numeric keypad appears with 4 visual dots for each digit.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <h4>Enter Your 4-Digit PIN</h4>
+            <p>The system automatically submits when you tap the 4th digit. If your PIN is correct, you'll be taken to the dashboard.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-body">
+          <strong>Tip:</strong> Your PIN is unique across the company. If you forget your PIN, ask your manager to look it up or reset it in the People section.
+        </div>
+      </div>
+
+      <h3 id="login-email">Email Login (Managers &amp; Admins)</h3>
+      <p>Managers and administrators log in with their email address and password.</p>
+
+      <div class="step-flow">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <h4>Tap "Manager Login"</h4>
+            <p>Switch to the email/password login form.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <h4>Enter Email &amp; Password</h4>
+            <p>Type your registered email address and password, then tap Sign In.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-icon">&#9888;</div>
+        <div class="callout-body">
+          <strong>Session:</strong> Your login session is stored on the device. You'll stay logged in until you tap the logout button or clear your browser data.
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section id="dashboard">
+      <h2>Dashboard</h2>
+      <p>The dashboard is your home screen. It shows different information depending on your role.</p>
+
+      <h3 id="dash-operator">Operator Dashboard</h3>
+      <p>Operators see a simplified home designed for fast action:</p>
+
+      <div class="card yellow">
+        <div class="card-title">Operator Home Screen</div>
+        <ul>
+          <li><strong>Scan QR Code</strong> &mdash; large button at the top. Tap to open the camera and scan an asset's QR code to start a check.</li>
+          <li><strong>Assigned Tasks</strong> &mdash; if your manager has assigned checks to you, they appear here with priority indicators and due dates. Tap a task to start the check immediately.</li>
+          <li><strong>Your Recent Checks</strong> &mdash; your last 5 checks with pass/fail status and time ago.</li>
+          <li><strong>Quick Stats</strong> &mdash; total assets and open defects count.</li>
+        </ul>
+      </div>
+
+      <h3 id="dash-manager">Manager Dashboard</h3>
+      <p>Managers and supervisors see the full command overview:</p>
+
+      <div class="card">
+        <div class="card-title">Manager Dashboard Features</div>
+        <ul>
+          <li><strong>Stats Grid</strong> &mdash; total assets, checks completed today, open defects (with critical count), and active crew numbers.</li>
+          <li><strong>Map Card</strong> &mdash; preview card showing GPS check count. Tap to open the full interactive map.</li>
+          <li><strong>Recent Checks</strong> &mdash; the 5 most recent checks across all operators, with pass/fail status and operator name.</li>
+          <li><strong>Site Overview</strong> &mdash; each site shows team count, asset count, today's check progress (as a percentage bar), and open defect count.</li>
+          <li><strong>Defect Breakdown</strong> &mdash; severity distribution (critical, high, medium, low) with color-coded badges. Pulsing red badge for critical defects.</li>
+          <li><strong>Calibration Warnings</strong> &mdash; assets with calibration due within 14 days, showing days remaining.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ==================== SCANNING ==================== -->
+    <section id="scanning">
+      <h2>QR Scanning</h2>
+      <p>Every asset in the system has a unique QR code (format: <code>CHX-XXXXXXXX</code>). Scanning is the fastest way to start a check.</p>
+
+      <div class="step-flow">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <h4>Open the Scanner</h4>
+            <p>Tap <strong>Scan</strong> in the navigation bar or the <strong>Scan QR Code</strong> button on your dashboard.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <h4>Point at the QR Code</h4>
+            <p>The camera opens automatically. Hold your device steady and aim at the QR label on the asset. The scanner reads the code instantly.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <h4>Asset Found</h4>
+            <p>The system looks up the asset and takes you directly to the check flow with that asset pre-selected.</p>
+          </div>
+        </div>
+      </div>
+
+      <h4>Manual Code Entry</h4>
+      <p>If the QR label is damaged or your camera isn't working, you can type the code manually:</p>
+      <ol>
+        <li>On the Scan page, tap <strong>Enter code manually</strong>.</li>
+        <li>Type the full code (e.g., <code>CHX-A2B4C6D8</code>).</li>
+        <li>Tap <strong>Look Up</strong> to find the asset.</li>
+      </ol>
+
+      <div class="callout tip">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-body">
+          <strong>Tip:</strong> You can also start a check without any QR code at all. Go to <strong>Checks &rarr; New Check</strong> and search for the asset by name, registration, or plant ID.
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CHECK FLOW ==================== -->
+    <section id="check-flow">
+      <h2>Performing a Check</h2>
+      <p>
+        A check is a structured safety inspection of an asset. The check flow has 5 steps.
+        GPS location is captured at the start and end of each check.
+      </p>
+
+      <h3 id="check-step1">Step 1: Select Asset</h3>
+      <div class="card">
+        <p>Search for the asset by name, registration number, or plant ID. The list shows all active assets in your company. If you arrived here from a QR scan or task assignment, the asset is already selected.</p>
+        <p>Each asset card shows its type (vehicle, trailer, or plant), registration/plant ID, and current status.</p>
+      </div>
+
+      <h3 id="check-step2">Step 2: Select Check Template</h3>
+      <div class="card">
+        <p>Choose which check template to apply. Templates are filtered to match the asset type (e.g., "Vehicle Daily Check" only shows for vehicles). Common templates include:</p>
+        <ul>
+          <li><strong>Daily Check</strong> &mdash; Short inspection covering essential safety items</li>
+          <li><strong>Weekly Check</strong> &mdash; More thorough inspection with additional items</li>
+        </ul>
+        <p>Some check items only appear based on asset properties (e.g., additional brake checks for vehicles over 7.5 tonnes).</p>
+      </div>
+
+      <h3 id="check-step3">Step 3: Complete the Checklist</h3>
+      <div class="card yellow">
+        <div class="card-title">This is the main inspection step</div>
+        <p>Items are grouped by section (e.g., General, Engine, Brakes, Lights). For each item:</p>
+        <ul>
+          <li><strong>&#10003; Pass</strong> (green) &mdash; the item is satisfactory</li>
+          <li><strong>&#10007; Fail</strong> (red) &mdash; the item has a defect</li>
+          <li><strong>&mdash; N/A</strong> &mdash; the item doesn't apply to this asset</li>
+        </ul>
+        <p>You can add optional notes to any item by tapping the notes field below it. Notes are especially useful for failed items to describe what's wrong.</p>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-icon">&#128205;</div>
+        <div class="callout-body">
+          <strong>GPS Location:</strong> When you start the checklist, the app captures your GPS position. Make sure you allow location access when prompted. This verifies you were physically at the asset location.
+        </div>
+      </div>
+
+      <h3 id="check-step4">Step 4: Summary</h3>
+      <div class="card">
+        <p>The summary screen shows your inspection result:</p>
+        <ul>
+          <li><span class="badge green">PASS</span> &mdash; All items passed. The asset is safe to use.</li>
+          <li><span class="badge red">FAIL</span> &mdash; One or more items failed. Failed items are listed. Defects will be created automatically.</li>
+        </ul>
+        <p>You can optionally record mileage readings (start/end) on this screen.</p>
+      </div>
+
+      <h3 id="check-step5">Step 5: Sign &amp; Submit</h3>
+      <div class="card green">
+        <div class="card-title">Final step &mdash; your digital signature</div>
+        <p>Use your finger or stylus to sign in the signature pad. This confirms you performed the inspection honestly and accurately.</p>
+        <p>Tap <strong>Submit Check</strong> to save. The system will:</p>
+        <ul>
+          <li>Save the check record with all item results</li>
+          <li>Capture your GPS location (end position)</li>
+          <li>Create defect reports for any failed items</li>
+          <li>If this check was from a task assignment, mark the task as completed</li>
+          <li>If any critical defect is found (brakes, steering, fire equipment), the asset is automatically flagged as <span class="badge red">Defective</span></li>
+        </ul>
+      </div>
+
+      <div class="callout danger">
+        <div class="callout-icon">&#9888;</div>
+        <div class="callout-body">
+          <strong>Important:</strong> Once submitted, a check cannot be edited. Make sure all items are correctly marked before signing. If you made a mistake, you will need to perform a new check.
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TASKS ==================== -->
+    <section id="tasks">
+      <h2>Task Assignments</h2>
+      <p>
+        Managers and supervisors can create check assignments for operators. Tasks specify which asset needs checking,
+        which template to use, who should do it, and when it's due.
+      </p>
+
+      <h3 id="task-create">Creating Tasks <span class="role-tag manager">Manager</span> <span class="role-tag supervisor">Supervisor</span></h3>
+
+      <div class="step-flow">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <h4>Go to Tasks Page</h4>
+            <p>Navigate to <strong>Tasks</strong> in the sidebar. The create form appears at the top.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <h4>Select Asset &amp; Template</h4>
+            <p>Choose the asset that needs inspecting. The template dropdown auto-filters to show only templates matching that asset type.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <h4>Assign To</h4>
+            <p>Select the person or team who should perform the check. Assigning to a team means any member can pick it up.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <div class="step-body">
+            <h4>Set Priority &amp; Due Date</h4>
+            <p>Choose a priority level and optionally set a due date. Tap <strong>Create Task</strong> to assign it.</p>
+          </div>
+        </div>
+      </div>
+
+      <h4>Priority Levels</h4>
+      <table>
+        <thead>
+          <tr><th>Priority</th><th>Indicator</th><th>When to Use</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="priority-dot urgent"></span>Urgent</td>
+            <td>Pulsing red dot</td>
+            <td>Safety-critical. Must be done immediately.</td>
+          </tr>
+          <tr>
+            <td><span class="priority-dot high"></span>High</td>
+            <td>Red dot</td>
+            <td>Important. Should be done today.</td>
+          </tr>
+          <tr>
+            <td><span class="priority-dot normal"></span>Normal</td>
+            <td>Yellow dot</td>
+            <td>Standard scheduled check. Default priority.</td>
+          </tr>
+          <tr>
+            <td><span class="priority-dot low"></span>Low</td>
+            <td>Grey dot</td>
+            <td>Can wait. Non-urgent inspection.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="task-complete">Completing Tasks <span class="role-tag operator">Operator</span></h3>
+
+      <div class="card yellow">
+        <div class="card-title">How Operators Complete Assigned Tasks</div>
+        <ol>
+          <li>Open the <strong>Dashboard</strong> &mdash; pending tasks show in the "Assigned Tasks" section</li>
+          <li>Tap a task to start. The check flow opens with the asset and template pre-selected.</li>
+          <li>Complete the check normally (checklist &rarr; summary &rarr; sign).</li>
+          <li>The task automatically updates to <span class="badge green">Completed</span> when you submit the check.</li>
+        </ol>
+      </div>
+
+      <h4>Task Statuses</h4>
+      <table>
+        <thead>
+          <tr><th>Status</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="badge yellow">Pending</span></td><td>Task created, waiting for operator to start</td></tr>
+          <tr><td><span class="badge amber">In Progress</span></td><td>Operator has started the check</td></tr>
+          <tr><td><span class="badge green">Completed</span></td><td>Check submitted. Linked to the completed check record.</td></tr>
+          <tr><td><span class="badge red">Overdue</span></td><td>Past due date and not yet completed</td></tr>
+          <tr><td><span class="badge gray">Cancelled</span></td><td>Manager cancelled the task</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ==================== DEFECTS ==================== -->
+    <section id="defects">
+      <h2>Defect Management</h2>
+      <p>
+        Defects are problems found during safety checks. They can be created automatically
+        when a check item fails, or manually by supervisors and managers.
+      </p>
+
+      <h3 id="defect-auto">Auto-Created Defects</h3>
+      <p>When a check is submitted with failed items, the system automatically creates a defect for each failure:</p>
+
+      <div class="card red">
+        <div class="card-title">Automatic Severity Assignment</div>
+        <table>
+          <thead>
+            <tr><th>Failed Item Contains</th><th>Auto Severity</th><th>Asset Impact</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Brake, steering, or fire equipment</td><td><span class="badge red">Critical</span></td><td>Asset marked <strong>defective</strong> &mdash; must not be used</td></tr>
+            <tr><td>Tyre, light, or exhaust</td><td><span class="badge amber">High</span></td><td>Asset remains active but needs attention</td></tr>
+            <tr><td>Any other item</td><td><span class="badge yellow">Medium</span></td><td>Asset remains active</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="defect-lifecycle">Defect Lifecycle</h3>
+      <div class="step-flow">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <h4>Open</h4>
+            <p>Defect is reported (auto or manual). Appears in the defects list with severity badge.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <h4>In Progress</h4>
+            <p>Someone is working on the fix. Updated via the defect detail page.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <h4>Resolved</h4>
+            <p>Fix verified. Record action taken, who resolved it, and when.</p>
+          </div>
+        </div>
+      </div>
+
+      <h4>Defect Detail Page</h4>
+      <p>Open any defect to view full details and take action:</p>
+      <ul>
+        <li><strong>Status controls</strong> &mdash; change status (open &rarr; in progress &rarr; resolved)</li>
+        <li><strong>Action taken</strong> &mdash; text field to describe the repair or fix</li>
+        <li><strong>Resolved by</strong> &mdash; records who fixed the issue</li>
+        <li><strong>Linked check</strong> &mdash; if auto-created, links back to the original check</li>
+      </ul>
+
+      <div class="callout warning">
+        <div class="callout-icon">&#9200;</div>
+        <div class="callout-body">
+          <strong>Overdue Alerts:</strong> Defects that remain open or in-progress get visual warnings:
+          amber ring after 24 hours, red ring after 72 hours. These appear in both the defect list and dashboard.
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ASSETS ==================== -->
+    <section id="assets">
+      <h2>Asset Management</h2>
+      <p>Assets are the vehicles, trailers, and plant equipment your company manages.</p>
+
+      <h3 id="asset-types">Asset Types</h3>
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Examples</th><th>Key Fields</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge yellow">Vehicle</span></td>
+            <td>Ford Transit, DAF 7.5t truck</td>
+            <td>Registration, weight class (standard / over 7.5t)</td>
+          </tr>
+          <tr>
+            <td><span class="badge amber">Trailer</span></td>
+            <td>Ifor Williams flatbed</td>
+            <td>Registration, serial number</td>
+          </tr>
+          <tr>
+            <td><span class="badge green">Plant</span></td>
+            <td>JCB 3CX, generator, breaker</td>
+            <td>Plant ID, serial number, calibration due date</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4>Asset Statuses</h4>
+      <table>
+        <thead>
+          <tr><th>Status</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="badge green">Active</span></td><td>In service. Available for checks and deployment.</td></tr>
+          <tr><td><span class="badge red">Defective</span></td><td>Safety defect found. Must not be used until resolved.</td></tr>
+          <tr><td><span class="badge amber">Off Hire</span></td><td>Temporarily unavailable (returned to hire company, etc.).</td></tr>
+          <tr><td><span class="badge gray">Archived</span></td><td>No longer in fleet. Hidden from active lists.</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Creating a New Asset <span class="role-tag manager">Manager</span></h4>
+      <ol>
+        <li>Go to <strong>Assets</strong> and tap <strong>Add Asset</strong>.</li>
+        <li>Select the asset type (Vehicle / Trailer / Plant).</li>
+        <li>Enter the name, and optionally the registration, plant ID, or serial number.</li>
+        <li>Choose the weight class if applicable (affects check templates for vehicles).</li>
+        <li>Set the site assignment and any maintenance dates.</li>
+        <li>Tap <strong>Create</strong>. A unique QR code is generated automatically.</li>
+      </ol>
+
+      <h3 id="asset-qr">QR Code Labels</h3>
+      <p>
+        Each asset gets a unique QR code in the format <code>CHX-XXXXXXXX</code> (8 characters).
+        Print labels from the Asset Detail page.
+      </p>
+
+      <div class="card">
+        <div class="card-title">Printing QR Labels</div>
+        <ol>
+          <li>Open the asset you want to label.</li>
+          <li>In the asset detail page, you'll see the QR code preview.</li>
+          <li>For bulk printing, go to <strong>Assets &rarr; QR Labels</strong>.</li>
+          <li>Labels are generated in a printable format (3 per row) showing the asset name, QR image, and ID.</li>
+        </ol>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-icon">&#128161;</div>
+        <div class="callout-body">
+          <strong>Tip:</strong> Print QR labels on weatherproof sticker paper and apply them to a visible, protected spot on the asset. Common locations: cab doors for vehicles, A-frames for trailers, and control panels for plant.
+        </div>
+      </div>
+
+      <h3 id="asset-transfer">Asset Transfers</h3>
+      <p>
+        Move assets between sites to track current deployment. Open the asset detail page, tap <strong>Transfer</strong>,
+        and select the new site. The transfer is logged with a timestamp.
+      </p>
+    </section>
+
+    <!-- ==================== SITES ==================== -->
+    <section id="sites">
+      <h2>Sites, Teams &amp; People</h2>
+      <p>The organisational hierarchy is: <strong>Company &rarr; Sites &rarr; Teams &rarr; People</strong>.</p>
+
+      <h4>Sites</h4>
+      <p>Construction sites or work locations. Each site has:</p>
+      <ul>
+        <li><strong>Name &amp; address</strong> (e.g., "M62 Junction 8 Upgrade, Burtonwood, WA5 4QE")</li>
+        <li><strong>GPS coordinates</strong> (latitude/longitude) for map display</li>
+        <li><strong>Teams</strong> assigned to the site</li>
+        <li><strong>Assets</strong> deployed at the site</li>
+      </ul>
+
+      <h4>Teams</h4>
+      <p>Groups of people working at a site. Each team has a name (e.g., "Alpha Crew") and an optional team leader. Tasks can be assigned to entire teams.</p>
+
+      <h4>People Management <span class="role-tag manager">Manager</span></h4>
+      <div class="card">
+        <div class="card-title">Adding a New Person</div>
+        <ol>
+          <li>Go to <strong>People</strong> and tap <strong>Add Person</strong>.</li>
+          <li>Enter first name, last name, and role.</li>
+          <li>For operators/supervisors: set a 4-digit PIN (this is their login code).</li>
+          <li>For managers/admins: set an email address and password.</li>
+          <li>Optionally assign to a team, add phone number, email, and licence number.</li>
+          <li>Tap <strong>Create</strong>.</li>
+        </ol>
+      </div>
+
+      <div class="callout warning">
+        <div class="callout-icon">&#9888;</div>
+        <div class="callout-body">
+          <strong>PIN Security:</strong> PINs are hashed and cannot be viewed after creation. If an operator forgets their PIN, a manager must set a new one. Do not reuse PINs across different people.
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== MAP ==================== -->
+    <section id="map">
+      <h2>Map &amp; GPS Tracking</h2>
+      <p>
+        The interactive map shows where safety checks have been performed, using GPS coordinates captured during each check.
+      </p>
+
+      <div class="card">
+        <div class="card-title">Map Features</div>
+        <ul>
+          <li><strong>Colored markers</strong> show check locations:
+            <ul>
+              <li><span class="badge green">Green</span> &mdash; Check passed</li>
+              <li><span class="badge red">Red</span> &mdash; Check failed (defects found)</li>
+              <li><span class="badge yellow">Yellow (pulsing)</span> &mdash; Check in progress / very recent (within 5 minutes)</li>
+            </ul>
+          </li>
+          <li><strong>Marker popups</strong> &mdash; tap any marker to see asset name, operator name, check result, and time.</li>
+          <li><strong>Auto-zoom</strong> &mdash; the map automatically fits all visible markers in view.</li>
+          <li><strong>Dark theme</strong> &mdash; uses high-contrast dark map tiles matching the app theme.</li>
+        </ul>
+      </div>
+
+      <div class="callout tip">
+        <div class="callout-icon">&#128205;</div>
+        <div class="callout-body">
+          <strong>GPS Accuracy:</strong> GPS coordinates are captured with the device's best available accuracy. For best results, ensure location services are enabled and you're in an area with good GPS signal. Indoor locations may have reduced accuracy.
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CHECK HISTORY ==================== -->
+    <section id="checks-history">
+      <h2>Check History</h2>
+      <p>The Checks page shows a complete history of all inspections performed.</p>
+
+      <div class="card">
+        <div class="card-title">Checks Page Features</div>
+        <ul>
+          <li><strong>Search</strong> &mdash; find checks by asset name or operator name</li>
+          <li><strong>Filter by result</strong> &mdash; show only passes, fails, or all</li>
+          <li><strong>Check details</strong> &mdash; tap any check to see the full inspection record, including:
+            <ul>
+              <li>Every checklist item and its result (pass/fail/N/A)</li>
+              <li>Notes added to specific items</li>
+              <li>GPS coordinates (start and end)</li>
+              <li>Mileage readings (if entered)</li>
+              <li>Digital signature image</li>
+              <li>Linked defects (if any)</li>
+              <li>Timestamps</li>
+            </ul>
+          </li>
+          <li><strong>New Check button</strong> &mdash; start a check without scanning (manual asset selection)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ==================== TEMPLATES ==================== -->
+    <section id="templates">
+      <h2>Check Templates</h2>
+      <p>
+        Templates define the checklist questions for each type of inspection. They are pre-configured by the system
+        and matched to asset types automatically.
+      </p>
+
+      <div class="card">
+        <div class="card-title">Template Structure</div>
+        <ul>
+          <li><strong>Name</strong> &mdash; e.g., "Vehicle Daily Check", "Plant Weekly Inspection"</li>
+          <li><strong>Asset Type</strong> &mdash; vehicle, trailer, or plant (only matching templates are shown)</li>
+          <li><strong>Frequency</strong> &mdash; daily or weekly</li>
+          <li><strong>Sections</strong> &mdash; checklist items grouped by category (General, Engine, Brakes, Lights, etc.)</li>
+          <li><strong>Conditional Items</strong> &mdash; some items only appear based on asset properties. For example, additional brake checks appear only for vehicles classed as "over 7.5 tonnes".</li>
+        </ul>
+      </div>
+
+      <h4>Example: Vehicle Daily Check Items</h4>
+      <table>
+        <thead>
+          <tr><th>Section</th><th>Example Items</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>General</td><td>Vehicle clean and tidy, registration plates visible, tax/MOT valid</td></tr>
+          <tr><td>Tyres</td><td>Tread depth &gt; 1.6mm, correct pressure, no damage, spare present</td></tr>
+          <tr><td>Lights</td><td>Headlights, indicators, brake lights, hazard lights, reversing lights</td></tr>
+          <tr><td>Engine</td><td>Oil level, coolant, washer fluid, no leaks, belts condition</td></tr>
+          <tr><td>Brakes</td><td>Brake test satisfactory, handbrake holds, fluid level</td></tr>
+          <tr><td>Safety</td><td>First aid kit, fire extinguisher, warning triangle, hi-vis vest</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ==================== TROUBLESHOOTING ==================== -->
+    <section id="troubleshooting">
+      <h2>Troubleshooting</h2>
+
+      <div class="card">
+        <div class="card-title">Common Issues</div>
+        <table>
+          <thead>
+            <tr><th>Problem</th><th>Solution</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>QR scanner won't open</td>
+              <td>Check that your browser has camera permission. Go to browser settings &rarr; Site settings &rarr; Camera, and allow access for the Daily Chex URL.</td>
+            </tr>
+            <tr>
+              <td>PIN login rejected</td>
+              <td>Make sure you selected the correct company. PINs are company-specific. If you've forgotten your PIN, ask your manager to reset it.</td>
+            </tr>
+            <tr>
+              <td>GPS location not captured</td>
+              <td>Enable Location Services on your device. Check browser permissions. GPS works best outdoors with clear sky. Indoor locations may not capture coordinates.</td>
+            </tr>
+            <tr>
+              <td>Check won't submit</td>
+              <td>All required checklist items must be answered (pass, fail, or N/A). Check that you haven't missed any items. The submit button is disabled until the signature is provided.</td>
+            </tr>
+            <tr>
+              <td>"Session expired" error</td>
+              <td>Your login token has expired. Log out and log back in. This is more common for manager accounts (24-hour session limit).</td>
+            </tr>
+            <tr>
+              <td>Asset shows as "Defective"</td>
+              <td>A critical defect (brakes/steering/fire equipment) was found. The asset cannot be used until the defect is resolved and the status is manually changed back to "Active" by a manager.</td>
+            </tr>
+            <tr>
+              <td>Wrong check template showing</td>
+              <td>Templates filter by asset type. If you selected a vehicle but see plant templates, the asset may be miscategorised. Ask a manager to check the asset type in Asset Management.</td>
+            </tr>
+            <tr>
+              <td>Can't see assigned tasks</td>
+              <td>Tasks appear on the Dashboard and Tasks page. Make sure the task was assigned to you personally (not just your team). Check with your supervisor.</td>
+            </tr>
+            <tr>
+              <td>Map shows no markers</td>
+              <td>GPS must have been captured during checks. If all checks were done indoors without GPS signal, no markers will appear. Recent checks (last 24h) with GPS are shown.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr />
+
+      <div class="card" style="text-align: center; padding: 32px;">
+        <p style="color: var(--text); font-size: 16px; font-weight: 600; margin-bottom: 8px;">Need More Help?</p>
+        <p style="color: var(--muted); font-size: 13px;">
+          Contact your site manager or system administrator.<br />
+          For technical support, raise an issue with your IT team.
+        </p>
+      </div>
+
+      <div style="text-align: center; margin-top: 32px; color: var(--faint); font-size: 12px;">
+        <p>daily-chex &mdash; Digital Safety Inspection Platform</p>
+        <p>&copy; 2025. All rights reserved.</p>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

@@ -27,7 +27,8 @@ export const people = pgTable('people', {
   email: text('email'),
   role: personRoleEnum('role').notNull().default('operator'),
   licenceNo: text('licence_no'),
-  pin: text('pin'), // hashed
+  pin: text('pin'), // hashed 4-digit PIN for operators
+  passwordHash: text('password_hash'), // hashed password for managers/admins
   status: personStatusEnum('status').notNull().default('active'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

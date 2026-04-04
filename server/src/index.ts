@@ -12,6 +12,8 @@ import { checkTemplatesRouter } from './routes/checkTemplates.js'
 import { checksRouter } from './routes/checks.js'
 import { defectsRouter } from './routes/defects.js'
 import { dashboardRouter } from './routes/dashboard.js'
+import { taskAssignmentsRouter } from './routes/taskAssignments.js'
+import { authRouter } from './routes/auth.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -35,6 +37,7 @@ app.use((req, _res, next) => {
 
 // API Routes
 app.use('/api', healthRouter)
+app.use('/api/auth', authRouter)
 app.use('/api/companies', companiesRouter)
 app.use('/api/sites', sitesRouter)
 app.use('/api/teams', teamsRouter)
@@ -44,6 +47,7 @@ app.use('/api/check-templates', checkTemplatesRouter)
 app.use('/api/checks', checksRouter)
 app.use('/api/defects', defectsRouter)
 app.use('/api/dashboard', dashboardRouter)
+app.use('/api/task-assignments', taskAssignmentsRouter)
 
 // Serve React frontend (production)
 const clientDist = path.resolve(__dirname, '../../app/dist')

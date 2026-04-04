@@ -18,6 +18,9 @@ import {
   defects,
 } from './schema/index.js'
 import { v4 as uuidv4 } from 'uuid'
+import bcrypt from 'bcrypt'
+
+const SALT_ROUNDS = 10
 
 // Fixed UUIDs for stable references
 const IDS = {
@@ -113,6 +116,18 @@ async function seed() {
   console.log('✓ 3 teams created')
 
   // ── People ──
+  // Hash PINs and passwords
+  const [pin1234, pin5678, pin1111, pin2222, pin3333, pin4444] = await Promise.all([
+    bcrypt.hash('1234', SALT_ROUNDS),
+    bcrypt.hash('5678', SALT_ROUNDS),
+    bcrypt.hash('1111', SALT_ROUNDS),
+    bcrypt.hash('2222', SALT_ROUNDS),
+    bcrypt.hash('3333', SALT_ROUNDS),
+    bcrypt.hash('4444', SALT_ROUNDS),
+  ])
+  const managerPass = await bcrypt.hash('SawAdmin2025!', SALT_ROUNDS)
+  const supervisorPass = await bcrypt.hash('SawSuper2025!', SALT_ROUNDS)
+
   await db.insert(people).values([
     {
       id: IDS.markJohnson,
@@ -124,7 +139,8 @@ async function seed() {
       email: 'mark.johnson@sawutilities.co.uk',
       role: 'manager',
       licenceNo: 'JOHNS710150MJ9AB',
-      pin: '1234',
+      pin: pin1234,
+      passwordHash: managerPass,
     },
     {
       id: IDS.davePatel,
@@ -134,7 +150,8 @@ async function seed() {
       lastName: 'Patel',
       phone: '07700 900101',
       role: 'supervisor',
-      pin: '5678',
+      pin: pin5678,
+      passwordHash: supervisorPass,
     },
     {
       id: IDS.steveWilson,
@@ -145,7 +162,7 @@ async function seed() {
       phone: '07700 900102',
       role: 'operator',
       licenceNo: 'WILSO850220SW1CD',
-      pin: '1111',
+      pin: pin1111,
     },
     {
       id: IDS.tomBaker,
@@ -155,7 +172,8 @@ async function seed() {
       lastName: 'Baker',
       phone: '07700 900103',
       role: 'supervisor',
-      pin: '2222',
+      pin: pin2222,
+      passwordHash: supervisorPass,
     },
     {
       id: IDS.ryanClark,
@@ -166,7 +184,7 @@ async function seed() {
       phone: '07700 900104',
       role: 'operator',
       licenceNo: 'CLARK900415RC3EF',
-      pin: '3333',
+      pin: pin3333,
     },
     {
       id: IDS.jamesMorgan,
@@ -177,7 +195,8 @@ async function seed() {
       phone: '07700 900105',
       email: 'james.morgan@sawutilities.co.uk',
       role: 'supervisor',
-      pin: '4444',
+      pin: pin4444,
+      passwordHash: supervisorPass,
     },
   ])
   console.log('✓ 6 people created')

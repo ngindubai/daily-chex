@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { db } from '../db/index.js'
-import { checks, checkItems } from '../db/schema/index.js'
-import { eq, desc } from 'drizzle-orm'
+import { checks, checkItems, defects, assets, checkTemplateItems } from '../db/schema/index.js'
+import { eq, desc, and } from 'drizzle-orm'
 
 export const checksRouter = Router()
 
@@ -74,7 +74,7 @@ checksRouter.post('/', async (req, res) => {
   }
 })
 
-// Complete check
+// Complete check — also auto-creates defects from failed items
 checksRouter.patch('/:id/complete', async (req, res) => {
   try {
     const {
@@ -93,6 +93,73 @@ checksRouter.patch('/:id/complete', async (req, res) => {
       .where(eq(checks.id, req.params.id))
       .returning()
     if (!row) return res.status(404).json({ error: 'Check not found' })
+
+    // Auto-create defects from failed items
+    if (overallResult === 'fail') {
+      try {
+        const failedItems = await db
+          .select()
+          .from(checkItems)
+          .where(and(eq(checkItems.checkId, req.params.id), eq(checkItems.result, 'fail')))
+
+        // Look up template item labels for descriptions
+        const templateItemIds = failedItems.map((i) => i.templateItemId)
+        const tplItems = templateItemIds.length
+          ? await db.select().from(checkTemplateItems).where(
+              // manual IN via or
+              eq(checkTemplateItems.id, templateItemIds[0]),
+            ).then(async (first) => {
+              if (templateItemIds.length <= 1) return first
+              const rest = await Promise.all(
+                templateItemIds.slice(1).map((tid) =>
+                  db.select().from(checkTemplateItems).where(eq(checkTemplateItems.id, tid)).then((r) => r[0]),
+                ),
+              )
+              return [...first, ...rest.filter(Boolean)]
+            })
+          : []
+        const labelMap = new Map(tplItems.map((t) => [t.id, t.label]))
+
+        let hasCritical = false
+        for (const item of failedItems) {
+          const label = labelMap.get(item.templateItemId) || 'Check item failed'
+          const description = item.notes
+            ? `${label}: ${item.notes}`
+            : label
+
+          // Determine severity based on section/label keywords
+          let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
+          const lower = label.toLowerCase()
+          if (lower.includes('brake') || lower.includes('steering') || lower.includes('fire')) {
+            severity = 'critical'
+            hasCritical = true
+          } else if (lower.includes('tyre') || lower.includes('light') || lower.includes('exhaust')) {
+            severity = 'high'
+          }
+
+          await db.insert(defects).values({
+            companyId: row.companyId,
+            checkId: row.id,
+            assetId: row.assetId,
+            reportedBy: row.personId,
+            description,
+            severity,
+          })
+        }
+
+        // Critical defect auto-flags asset as defective
+        if (hasCritical) {
+          await db
+            .update(assets)
+            .set({ status: 'defective', updatedAt: new Date() })
+            .where(eq(assets.id, row.assetId))
+        }
+      } catch (defectErr) {
+        console.error('Error auto-creating defects:', defectErr)
+        // Don't fail the check completion if defect creation fails
+      }
+    }
+
     res.json(row)
   } catch (err) {
     console.error('Error completing check:', err)
