@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Truck, Container, Wrench, Package, MapPin, QrCode,
-  Calendar, Weight, Hash, Building, Loader2, ArrowRightLeft, CheckCircle, AlertTriangle, ClipboardCheck,
+  Calendar, Weight, Hash, Building, Loader2, ArrowRightLeft, CheckCircle, AlertTriangle, ClipboardCheck, User, UserCheck,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { Card, Badge, Button } from '@/components/ui'
@@ -22,6 +22,7 @@ interface Asset {
   category: string | null
   weightClass: string | null
   siteId: string | null
+  assignedToId: string | null
   qrCode: string | null
   photoUrl: string | null
   nextService: string | null
@@ -34,6 +35,13 @@ interface Asset {
 interface Site {
   id: string
   name: string
+}
+
+interface Person {
+  id: string
+  firstName: string
+  lastName: string
+  role: string
 }
 
 const typeIcon: Record<string, typeof Package> = {
@@ -59,21 +67,27 @@ export function AssetDetailPage() {
   const { user, token } = useAuth()
   const [asset, setAsset] = useState<Asset | null>(null)
   const [sites, setSites] = useState<Site[]>([])
+  const [people, setPeople] = useState<Person[]>([])
   const [loading, setLoading] = useState(true)
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [showTransfer, setShowTransfer] = useState(false)
   const [transferSiteId, setTransferSiteId] = useState('')
   const [transferring, setTransferring] = useState(false)
+  const [showAssign, setShowAssign] = useState(false)
+  const [assignPersonId, setAssignPersonId] = useState('')
+  const [assigning, setAssigning] = useState(false)
 
   const fetchAsset = useCallback(async () => {
     if (!id || !token || !user) return
     try {
-      const [a, s] = await Promise.all([
+      const [a, s, p] = await Promise.all([
         api<Asset>(`/assets/${id}`, { token }),
         api<Site[]>(`/sites?companyId=${user.companyId}`, { token }),
+        api<Person[]>(`/people?companyId=${user.companyId}`, { token }),
       ])
       setAsset(a)
       setSites(s)
+      setPeople(p)
       if (a.qrCode) {
         const url = await QRCode.toDataURL(a.qrCode, {
           width: 200,
@@ -131,6 +145,23 @@ export function AssetDetailPage() {
 
   const Icon = typeIcon[asset.type] || Package
   const siteName = sites.find((s) => s.id === asset.siteId)?.name
+  const assignedPerson = people.find((p) => p.id === asset.assignedToId)
+
+  const handleAssign = async () => {
+    if (!assignPersonId || !token || !id) return
+    setAssigning(true)
+    try {
+      await api(`/assets/${id}/assign`, {
+        token,
+        method: 'POST',
+        body: JSON.stringify({ assignedToId: assignPersonId }),
+      })
+      setShowAssign(false)
+      setAssignPersonId('')
+      fetchAsset()
+    } catch { /* ignore */ }
+    setAssigning(false)
+  }
 
   return (
     <div className="p-4 lg:p-6 pb-24 lg:pb-6 space-y-4 max-w-2xl mx-auto">
@@ -185,6 +216,9 @@ export function AssetDetailPage() {
           {asset.weightClass && (
             <Detail icon={<Weight className="w-3.5 h-3.5" />} label="Weight" value={asset.weightClass === 'over_7_5t' ? 'Over 7.5t' : 'Standard'} />
           )}
+          {assignedPerson && (
+            <Detail icon={<UserCheck className="w-3.5 h-3.5" />} label="Assigned to" value={`${assignedPerson.firstName} ${assignedPerson.lastName}`} />
+          )}
           {siteName && (
             <Detail icon={<MapPin className="w-3.5 h-3.5" />} label="Site" value={siteName} />
           )}
@@ -204,6 +238,10 @@ export function AssetDetailPage() {
           <Button variant="primary" size="sm" onClick={() => navigate(`/checks/new?assetId=${asset.id}`)}>
             <ClipboardCheck className="w-3.5 h-3.5" />
             Start Check
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setShowAssign(!showAssign)}>
+            <User className="w-3.5 h-3.5" />
+            Reassign
           </Button>
           <Button variant="secondary" size="sm" onClick={() => setShowTransfer(!showTransfer)}>
             <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -227,6 +265,24 @@ export function AssetDetailPage() {
             </Button>
           )}
         </div>
+
+        {showAssign && (
+          <div className="mt-3 flex items-center gap-2">
+            <select
+              value={assignPersonId}
+              onChange={(e) => setAssignPersonId(e.target.value)}
+              className="flex-1 h-9 bg-chex-surface border border-chex-border rounded-[var(--radius-md)] text-sm text-chex-text px-3"
+            >
+              <option value="">Select person...</option>
+              {people.map((p) => (
+                <option key={p.id} value={p.id}>{p.firstName} {p.lastName} ({p.role})</option>
+              ))}
+            </select>
+            <Button variant="primary" size="sm" disabled={!assignPersonId || assigning} onClick={handleAssign}>
+              {assigning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Assign'}
+            </Button>
+          </div>
+        )}
 
         {showTransfer && (
           <div className="mt-3 flex items-center gap-2">

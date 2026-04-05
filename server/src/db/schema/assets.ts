@@ -8,6 +8,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { companies } from './companies.js'
 import { sites } from './sites.js'
+import { people } from './people.js'
 
 export const assetTypeEnum = pgEnum('asset_type', ['vehicle', 'trailer', 'plant'])
 
@@ -24,6 +25,7 @@ export const assets = pgTable('assets', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyId: uuid('company_id').notNull().references(() => companies.id),
   siteId: uuid('site_id').references(() => sites.id),
+  assignedToId: uuid('assigned_to_id').references(() => people.id),
   type: assetTypeEnum('type').notNull(),
   name: text('name').notNull(),
   plantId: text('plant_id'),

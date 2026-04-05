@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import { db } from '../db/index.js'
 import { people } from '../db/schema/index.js'
 import { eq } from 'drizzle-orm'
+import { requireAuth, requireRole } from '../auth/middleware.js'
 
 const SALT_ROUNDS = 10
 export const peopleRouter = Router()
@@ -41,8 +42,8 @@ peopleRouter.get('/:id', async (req, res) => {
   }
 })
 
-// Create person
-peopleRouter.post('/', async (req, res) => {
+// Create person (restricted to manager/admin)
+peopleRouter.post('/', requireAuth, requireRole('manager', 'admin'), async (req, res) => {
   try {
     const { companyId, teamId, firstName, lastName, phone, email, role, licenceNo, pin, password } = req.body
     if (!companyId || !firstName || !lastName) {

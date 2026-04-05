@@ -120,14 +120,18 @@ export function PeoplePage() {
     )
   }
 
+  const canManagePeople = user?.role === 'manager' || user?.role === 'admin'
+
   return (
     <div className="p-4 lg:p-6 pb-24 lg:pb-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold tracking-tight">People</h1>
-        <Button variant="primary" size="sm" onClick={() => setShowAdd(true)}>
-          <Plus className="h-3.5 w-3.5" />
-          Add Person
-        </Button>
+        {canManagePeople && (
+          <Button variant="primary" size="sm" onClick={() => setShowAdd(true)}>
+            <Plus className="h-3.5 w-3.5" />
+            Add Person
+          </Button>
+        )}
       </div>
 
       {/* Search + filter */}
@@ -154,7 +158,7 @@ export function PeoplePage() {
       </div>
 
       {/* Add person form */}
-      {showAdd && (
+      {showAdd && canManagePeople && (
         <Card variant="yellow" className="relative">
           <button
             onClick={() => setShowAdd(false)}

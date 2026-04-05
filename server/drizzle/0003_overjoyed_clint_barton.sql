@@ -1,0 +1,2 @@
+ALTER TABLE "assets" ADD COLUMN "assigned_to_id" uuid;--> statement-breakpoint
+ALTER TABLE "assets" ADD CONSTRAINT "assets_assigned_to_id_people_id_fk" FOREIGN KEY ("assigned_to_id") REFERENCES "public"."people"("id") ON DELETE no action ON UPDATE no action;

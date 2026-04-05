@@ -14,6 +14,9 @@ import {
   Loader2,
   QrCode,
   ChevronRight,
+  Wrench,
+  Truck,
+  Container,
 } from 'lucide-react'
 import { Card, CardTitle, CardValue, CardDescription, Badge, StatusDot, ProgressBar } from '@/components/ui'
 import { useAuth } from '@/context/AuthContext'
@@ -58,7 +61,7 @@ interface DefectBreakdown {
   low: number
 }
 
-interface Asset { id: string; name: string; type: string }
+interface Asset { id: string; name: string; type: string; assignedToId: string | null; status: string }
 interface Person { id: string; name: string }
 interface PendingTask {
   id: string
@@ -156,6 +159,9 @@ export function DashboardPage() {
 
   const totalDefects = defectBreakdown.critical + defectBreakdown.high + defectBreakdown.medium + defectBreakdown.low
 
+  const myKit = assets.filter((a) => a.assignedToId === user?.id)
+  const typeIcons: Record<string, typeof Package> = { vehicle: Truck, trailer: Container, plant: Wrench }
+
   // Determine if user is an operator (show simplified home)
   const isOperator = user?.role === 'operator'
 
@@ -166,6 +172,39 @@ export function DashboardPage() {
           <h1 className="text-xl font-bold tracking-tight">Hey {user.firstName}</h1>
           <p className="text-sm text-chex-muted mt-0.5">{dateStr}</p>
         </div>
+
+        {/* My Kit */}
+        {myKit.length > 0 && (
+          <div>
+            <h2 className="text-sm font-semibold text-chex-text mb-3 uppercase tracking-wider flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-chex-yellow" />
+              My Kit
+            </h2>
+            <div className="space-y-2">
+              {myKit.map((a) => {
+                const KitIcon = typeIcons[a.type] || Package
+                return (
+                  <Card
+                    key={a.id}
+                    className="cursor-pointer hover:border-chex-yellow/20 transition-colors"
+                    onClick={() => navigate(`/assets/${a.id}`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-[var(--radius-md)] bg-chex-yellow/10 flex items-center justify-center shrink-0">
+                        <KitIcon className="w-4 h-4 text-chex-yellow" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-chex-text truncate">{a.name}</p>
+                        <p className="text-xs text-chex-muted capitalize">{a.type}</p>
+                      </div>
+                      <Badge variant={a.status === 'active' ? 'green' : a.status === 'defective' ? 'red' : 'default'}>{a.status}</Badge>
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Big scan button */}
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
@@ -288,6 +327,39 @@ export function DashboardPage() {
         </div>
         <Badge variant="green" pulse>LIVE</Badge>
       </div>
+
+      {/* My Kit (managers/supervisors) */}
+      {myKit.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-chex-text mb-3 uppercase tracking-wider flex items-center gap-2">
+            <Wrench className="h-4 w-4 text-chex-yellow" />
+            Your Assigned Kit
+          </h2>
+          <div className="grid lg:grid-cols-3 gap-2">
+            {myKit.map((a) => {
+              const KitIcon = typeIcons[a.type] || Package
+              return (
+                <Card
+                  key={a.id}
+                  className="cursor-pointer hover:border-chex-yellow/20 transition-colors"
+                  onClick={() => navigate(`/assets/${a.id}`)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-[var(--radius-md)] bg-chex-yellow/10 flex items-center justify-center shrink-0">
+                      <KitIcon className="w-4 h-4 text-chex-yellow" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-chex-text truncate">{a.name}</p>
+                      <p className="text-xs text-chex-muted capitalize">{a.type}</p>
+                    </div>
+                    <Badge variant={a.status === 'active' ? 'green' : a.status === 'defective' ? 'red' : 'default'}>{a.status}</Badge>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Stats grid */}
       <motion.div

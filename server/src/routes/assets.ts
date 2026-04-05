@@ -3,6 +3,7 @@ import { db } from '../db/index.js'
 import { assets } from '../db/schema/index.js'
 import { eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
+import { requireAuth } from '../auth/middleware.js'
 
 export const assetsRouter = Router()
 
@@ -15,12 +16,17 @@ function generateQrCode(): string {
   return code
 }
 
-// List assets (filter by companyId, siteId)
+// List assets (filter by companyId, siteId, assignedToId)
 assetsRouter.get('/', async (req, res) => {
   try {
     const companyId = req.query.companyId as string
     const siteId = req.query.siteId as string
+    const assignedToId = req.query.assignedToId as string
 
+    if (assignedToId) {
+      const rows = await db.select().from(assets).where(eq(assets.assignedToId, assignedToId))
+      return res.json(rows)
+    }
     if (siteId) {
       const rows = await db.select().from(assets).where(eq(assets.siteId, siteId))
       return res.json(rows)
@@ -29,7 +35,7 @@ assetsRouter.get('/', async (req, res) => {
       const rows = await db.select().from(assets).where(eq(assets.companyId, companyId))
       return res.json(rows)
     }
-    return res.status(400).json({ error: 'companyId or siteId query param required' })
+    return res.status(400).json({ error: 'companyId, siteId, or assignedToId query param required' })
   } catch (err) {
     console.error('Error listing assets:', err)
     res.status(500).json({ error: 'Failed to list assets' })
@@ -64,7 +70,7 @@ assetsRouter.get('/:id', async (req, res) => {
 assetsRouter.post('/', async (req, res) => {
   try {
     const {
-      companyId, siteId, type, name, plantId, serialNumber,
+      companyId, siteId, assignedToId, type, name, plantId, serialNumber,
       registration, supplier, category, weightClass,
       calibrationDue, nextService, notes,
     } = req.body
@@ -76,7 +82,7 @@ assetsRouter.post('/', async (req, res) => {
     const [row] = await db
       .insert(assets)
       .values({
-        companyId, siteId, type, name, plantId, serialNumber,
+        companyId, siteId, assignedToId, type, name, plantId, serialNumber,
         registration, supplier, category, weightClass,
         calibrationDue, nextService, qrCode, notes,
       })
@@ -92,14 +98,14 @@ assetsRouter.post('/', async (req, res) => {
 assetsRouter.patch('/:id', async (req, res) => {
   try {
     const {
-      siteId, name, plantId, serialNumber, registration,
+      siteId, assignedToId, name, plantId, serialNumber, registration,
       supplier, category, weightClass, calibrationDue,
       nextService, status, notes, photoUrl,
     } = req.body
     const [row] = await db
       .update(assets)
       .set({
-        siteId, name, plantId, serialNumber, registration,
+        siteId, assignedToId, name, plantId, serialNumber, registration,
         supplier, category, weightClass, calibrationDue,
         nextService, status, notes, photoUrl, updatedAt: new Date(),
       })
@@ -129,5 +135,22 @@ assetsRouter.post('/:id/transfer', async (req, res) => {
   } catch (err) {
     console.error('Error transferring asset:', err)
     res.status(500).json({ error: 'Failed to transfer asset' })
+  }
+})
+
+// Assign asset to a person (team leader)
+assetsRouter.post('/:id/assign', async (req, res) => {
+  try {
+    const { assignedToId } = req.body
+    const [row] = await db
+      .update(assets)
+      .set({ assignedToId: assignedToId || null, updatedAt: new Date() })
+      .where(eq(assets.id, req.params.id))
+      .returning()
+    if (!row) return res.status(404).json({ error: 'Asset not found' })
+    res.json(row)
+  } catch (err) {
+    console.error('Error assigning asset:', err)
+    res.status(500).json({ error: 'Failed to assign asset' })
   }
 })
