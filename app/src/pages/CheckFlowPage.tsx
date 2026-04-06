@@ -86,6 +86,7 @@ export function CheckFlowPage() {
   const [signatureData, setSignatureData] = useState('')
   const [startGps, setStartGps] = useState<{ lat: number; lng: number; accuracy: number } | null>(null)
   const [assetSearch, setAssetSearch] = useState('')
+  const [completedCheckId, setCompletedCheckId] = useState<string | null>(null)
 
   // Fetch base data
   const fetchData = useCallback(async () => {
@@ -211,7 +212,7 @@ export function CheckFlowPage() {
         body: JSON.stringify({
           companyId: user.companyId,
           assetId: selectedAssetId,
-          personId: user.sub,
+          personId: user.id,
           siteId: selectedAsset?.siteId || undefined,
           teamId: user.teamId || undefined,
           checkTemplateId: selectedTemplateId,
@@ -262,8 +263,10 @@ export function CheckFlowPage() {
         } catch { /* non-critical */ }
       }
 
+      setCompletedCheckId(check.id)
       setStep('done')
-    } catch {
+    } catch (err) {
+      console.error('Check submission failed:', err)
       setStep('sign') // go back to sign step on error
     }
   }
@@ -587,16 +590,22 @@ export function CheckFlowPage() {
           <div className="h-16 w-16 rounded-full bg-green-500/10 border-2 border-green-500 flex items-center justify-center">
             <Check className="w-8 h-8 text-green-500" />
           </div>
-          <h2 className="text-lg font-bold">Check Submitted</h2>
+          <h2 className="text-lg font-bold">Check Completed Successfully</h2>
           <p className="text-sm text-chex-muted max-w-xs">
             {selectedAsset?.name} — {overallResult === 'pass' ? 'All items passed.' : `${failedItems.length} defect(s) logged.`}
           </p>
-          <div className="flex gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+            {completedCheckId && (
+              <Button variant="primary" size="sm" onClick={() => navigate(`/checks/${completedCheckId}`)}>
+                <ClipboardCheck className="w-3.5 h-3.5" />
+                Review Check
+              </Button>
+            )}
             <Button variant="secondary" size="sm" onClick={() => navigate('/checks')}>
               View All Checks
             </Button>
-            <Button variant="primary" size="sm" onClick={() => navigate('/scan')}>
-              Scan Next
+            <Button variant="ghost" size="sm" onClick={() => navigate('/checks/new')}>
+              New Check
             </Button>
           </div>
         </div>
