@@ -8,6 +8,7 @@ interface CardProps {
   glow?: boolean
   className?: string
   children: ReactNode
+  onClick?: () => void
 }
 
 const variantStyles: Record<CardVariant, string> = {
@@ -28,9 +29,10 @@ const glowMap: Record<CardVariant, string> = {
   blue: '',
 }
 
-export function Card({ variant = 'default', glow = false, className, children }: CardProps) {
+export function Card({ variant = 'default', glow = false, className, children, onClick }: CardProps) {
   return (
     <div
+      onClick={onClick}
       className={cn(
         'relative border rounded-[var(--radius-lg)] p-5 transition-all duration-200',
         variantStyles[variant],
