@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft, ArrowRight, Check, X, Minus, Camera, Loader2,
-  MapPin, ClipboardCheck, PenTool, Send, AlertTriangle,
+  MapPin, ClipboardCheck, PenTool, Send, AlertTriangle, Search,
 } from 'lucide-react'
 import { Card, Badge, Button, Input } from '@/components/ui'
 import { SignatureCanvas } from '@/components/SignatureCanvas'
