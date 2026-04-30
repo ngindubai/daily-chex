@@ -29,6 +29,13 @@
       "when": 1775416065579,
       "tag": "0003_overjoyed_clint_barton",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777546133858,
+      "tag": "0004_ordinary_yellowjacket",
+      "breakpoints": true
     }
   ]
 }

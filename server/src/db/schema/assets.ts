@@ -10,7 +10,7 @@ import { companies } from './companies.js'
 import { sites } from './sites.js'
 import { people } from './people.js'
 
-export const assetTypeEnum = pgEnum('asset_type', ['vehicle', 'trailer', 'plant'])
+export const assetTypeEnum = pgEnum('asset_type', ['vehicle', 'trailer', 'plant', 'machinery'])
 
 export const weightClassEnum = pgEnum('weight_class', ['standard', 'over_7_5t'])
 

@@ -38,11 +38,13 @@ const typeIcon: Record<string, typeof Package> = {
   vehicle: Truck,
   trailer: Container,
   plant: Wrench,
+  machinery: Wrench,
 }
-const typeBadgeVariant: Record<string, 'blue' | 'amber' | 'yellow'> = {
+const typeBadgeVariant: Record<string, 'blue' | 'amber' | 'yellow' | 'green'> = {
   vehicle: 'blue',
   trailer: 'amber',
   plant: 'yellow',
+  machinery: 'green',
 }
 const statusVariant: Record<string, 'green' | 'red' | 'default' | 'amber'> = {
   active: 'green',
@@ -188,6 +190,7 @@ export function AssetsPage() {
           <option value="vehicle">Vehicle</option>
           <option value="trailer">Trailer</option>
           <option value="plant">Plant</option>
+          <option value="machinery">Machinery</option>
         </select>
         <select
           value={assignedFilter}
@@ -232,6 +235,7 @@ export function AssetsPage() {
                   <option value="plant">Plant</option>
                   <option value="vehicle">Vehicle</option>
                   <option value="trailer">Trailer</option>
+                  <option value="machinery">Machinery</option>
                 </select>
               </div>
               <div className="space-y-1.5">

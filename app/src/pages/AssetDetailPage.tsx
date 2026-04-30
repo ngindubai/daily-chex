@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Truck, Container, Wrench, Package, MapPin, QrCode,
-  Calendar, Weight, Hash, Building, Loader2, ArrowRightLeft, CheckCircle, AlertTriangle, ClipboardCheck, User, UserCheck,
+  Calendar, Weight, Hash, Building, Loader2, ArrowRightLeft, CheckCircle, AlertTriangle, ClipboardCheck, User, UserCheck, Pencil,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { Card, Badge, Button } from '@/components/ui'
@@ -13,7 +13,7 @@ interface Asset {
   id: string
   companyId: string
   name: string
-  type: 'vehicle' | 'trailer' | 'plant'
+  type: 'vehicle' | 'trailer' | 'plant' | 'machinery'
   status: string
   registration: string | null
   plantId: string | null
@@ -48,11 +48,13 @@ const typeIcon: Record<string, typeof Package> = {
   vehicle: Truck,
   trailer: Container,
   plant: Wrench,
+  machinery: Wrench,
 }
-const typeBadge: Record<string, 'blue' | 'amber' | 'yellow'> = {
+const typeBadge: Record<string, 'blue' | 'amber' | 'yellow' | 'green'> = {
   vehicle: 'blue',
   trailer: 'amber',
   plant: 'yellow',
+  machinery: 'green',
 }
 const statusVariant: Record<string, 'green' | 'red' | 'amber' | 'default'> = {
   active: 'green',
@@ -76,6 +78,11 @@ export function AssetDetailPage() {
   const [showAssign, setShowAssign] = useState(false)
   const [assignPersonId, setAssignPersonId] = useState('')
   const [assigning, setAssigning] = useState(false)
+  const [showEditDates, setShowEditDates] = useState(false)
+  const [editNextService, setEditNextService] = useState('')
+  const [editCalibrationDue, setEditCalibrationDue] = useState('')
+  const [editType, setEditType] = useState('')
+  const [savingDates, setSavingDates] = useState(false)
 
   const fetchAsset = useCallback(async () => {
     if (!id || !token || !user) return
@@ -163,6 +170,25 @@ export function AssetDetailPage() {
     setAssigning(false)
   }
 
+  const handleSaveDates = async () => {
+    if (!token || !id) return
+    setSavingDates(true)
+    try {
+      await api(`/assets/${id}`, {
+        token,
+        method: 'PATCH',
+        body: JSON.stringify({
+          ...(editNextService ? { nextService: editNextService } : {}),
+          ...(editCalibrationDue ? { calibrationDue: editCalibrationDue } : {}),
+          ...(editType ? { type: editType } : {}),
+        }),
+      })
+      setShowEditDates(false)
+      fetchAsset()
+    } catch { /* ignore */ }
+    setSavingDates(false)
+  }
+
   return (
     <div className="p-4 lg:p-6 pb-24 lg:pb-6 space-y-4 max-w-2xl mx-auto">
       {/* Header */}
@@ -247,6 +273,19 @@ export function AssetDetailPage() {
             <ArrowRightLeft className="w-3.5 h-3.5" />
             Transfer Site
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setEditNextService(asset.nextService || '')
+              setEditCalibrationDue(asset.calibrationDue || '')
+              setEditType(asset.type)
+              setShowEditDates(!showEditDates)
+            }}
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            Edit Details
+          </Button>
           {asset.status !== 'active' && (
             <Button variant="primary" size="sm" onClick={() => handleStatusChange('active')}>
               <CheckCircle className="w-3.5 h-3.5" />
@@ -265,6 +304,47 @@ export function AssetDetailPage() {
             </Button>
           )}
         </div>
+
+        {showEditDates && (
+          <div className="mt-3 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-chex-muted uppercase tracking-wider">Next Service</label>
+                <input
+                  type="date"
+                  value={editNextService}
+                  onChange={(e) => setEditNextService(e.target.value)}
+                  className="w-full h-9 bg-chex-surface border border-chex-border rounded-[var(--radius-md)] text-sm text-chex-text px-3 focus:border-chex-yellow focus:ring-1 focus:ring-chex-yellow/30"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-chex-muted uppercase tracking-wider">Calibration Due</label>
+                <input
+                  type="date"
+                  value={editCalibrationDue}
+                  onChange={(e) => setEditCalibrationDue(e.target.value)}
+                  className="w-full h-9 bg-chex-surface border border-chex-border rounded-[var(--radius-md)] text-sm text-chex-text px-3 focus:border-chex-yellow focus:ring-1 focus:ring-chex-yellow/30"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-chex-muted uppercase tracking-wider">Asset Type</label>
+              <select
+                value={editType}
+                onChange={(e) => setEditType(e.target.value)}
+                className="w-full h-9 bg-chex-surface border border-chex-border rounded-[var(--radius-md)] text-sm text-chex-text px-3"
+              >
+                <option value="vehicle">Vehicle</option>
+                <option value="trailer">Trailer</option>
+                <option value="plant">Plant</option>
+                <option value="machinery">Machinery</option>
+              </select>
+            </div>
+            <Button variant="primary" size="sm" disabled={savingDates} onClick={handleSaveDates}>
+              {savingDates ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Changes'}
+            </Button>
+          </div>
+        )}
 
         {showAssign && (
           <div className="mt-3 flex items-center gap-2">

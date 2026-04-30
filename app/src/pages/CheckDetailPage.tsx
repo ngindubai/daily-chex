@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Check, X, Minus, MapPin, Calendar, User,
-  Loader2, Truck, ClipboardCheck, AlertTriangle,
+  Loader2, Truck, ClipboardCheck, AlertTriangle, Printer,
 } from 'lucide-react'
 import { Card, Badge } from '@/components/ui'
 import { useAuth } from '@/context/AuthContext'
@@ -142,6 +142,13 @@ export function CheckDetailPage() {
             )}
           </div>
         </div>
+        <button
+          onClick={() => window.print()}
+          title="Print / Save as PDF"
+          className="h-9 w-9 rounded-[var(--radius-md)] bg-chex-surface border border-chex-border flex items-center justify-center hover:border-chex-muted transition-colors cursor-pointer"
+        >
+          <Printer className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Summary card */}

@@ -55,6 +55,7 @@ const IDS = {
   tplVehicleWeekly: uuidv4(),
   tplPUWER: uuidv4(),
   tplVehicleDaily: uuidv4(),
+  tplMachineryWalkAround: uuidv4(),
 }
 
 function qr(): string {
@@ -257,7 +258,7 @@ async function seed() {
       companyId: IDS.company,
       siteId: IDS.siteM62,
       assignedToId: IDS.davePatel,
-      type: 'plant',
+      type: 'machinery',
       name: 'JCB 3CX Backhoe',
       plantId: 'GAP-29847',
       supplier: 'GAP Group',
@@ -270,7 +271,7 @@ async function seed() {
       companyId: IDS.company,
       siteId: IDS.siteLeeds,
       assignedToId: IDS.tomBaker,
-      type: 'plant',
+      type: 'machinery',
       name: 'CAT 308 Mini Excavator',
       plantId: 'GAP-31205',
       supplier: 'GAP Group',
@@ -468,6 +469,60 @@ async function seed() {
     })),
   )
   console.log('✓ Template 3: Vehicle Daily Check (30 items)')
+
+  // Template 4: Machinery Walk-Around Daily
+  await db.insert(checkTemplates).values({
+    id: IDS.tplMachineryWalkAround,
+    companyId: IDS.company,
+    name: 'Machinery Walk-Around Daily Check',
+    slug: 'machinery-walkaround-daily',
+    assetType: 'machinery',
+    checkFrequency: 'daily',
+    description: 'Daily pre-use walk-around inspection for excavators, dumpers, and operated machinery',
+  })
+
+  const machineryItems = [
+    // Walk-Around section — all machinery
+    { section: 'Walk-Around', label: 'Visual walk-around — damage, cracks, loose/missing bolts & pins, dents, wear on structure and attachments', sortOrder: 1 },
+    { section: 'Walk-Around', label: 'Fluid leaks — inspect underneath and around for oil, hydraulic, coolant, or fuel leaks', sortOrder: 2 },
+    { section: 'Walk-Around', label: 'Engine oil level — check and top up if required', sortOrder: 3 },
+    { section: 'Walk-Around', label: 'Hydraulic oil level — check and top up if required', sortOrder: 4 },
+    { section: 'Walk-Around', label: 'Coolant level — check radiator coolant level', sortOrder: 5 },
+    { section: 'Walk-Around', label: 'Fuel level — sufficient for the shift', sortOrder: 6 },
+    { section: 'Walk-Around', label: 'Tyres / tracks — tyre pressure, tread, cuts (wheeled); track tension, condition, debris buildup (tracked)', sortOrder: 7 },
+    { section: 'Walk-Around', label: 'Lights, beacons, and electricals — test all lights, indicators, rotating beacon, reversing lights', sortOrder: 8 },
+    { section: 'Walk-Around', label: 'Horn and warning devices — test horn, reversing alarm, audible and visual warnings', sortOrder: 9 },
+    { section: 'Walk-Around', label: 'Mirrors and visibility aids — clean, check for damage, confirm good all-round visibility', sortOrder: 10 },
+    { section: 'Walk-Around', label: 'Fire extinguisher — present, charged, and accessible', sortOrder: 11 },
+    { section: 'Walk-Around', label: 'Seat belt and ROPS/FOPS — check condition and functionality', sortOrder: 12 },
+    { section: 'Walk-Around', label: 'Documentation — valid hire paperwork, insurance, thorough examination, and required permits', sortOrder: 13 },
+    // Digger (Excavator) section — category: digger
+    { section: 'Digger (Excavator)', label: 'Hydraulic hoses, cylinders, and rams — inspect for leaks, abrasions, or damage', sortOrder: 14, appliesWhen: '{"category":"digger"}' },
+    { section: 'Digger (Excavator)', label: 'Boom, stick/arm, and bucket/attachment — check for cracks, bent parts, worn pins, secure quick hitch', sortOrder: 15, appliesWhen: '{"category":"digger"}' },
+    { section: 'Digger (Excavator)', label: 'Undercarriage — clear debris; check rollers, idlers, sprockets, and track shoes for wear', sortOrder: 16, appliesWhen: '{"category":"digger"}' },
+    { section: 'Digger (Excavator)', label: 'Controls and safety lock lever — test all controls; ensure safety lock lever works correctly', sortOrder: 17, appliesWhen: '{"category":"digger"}' },
+    { section: 'Digger (Excavator)', label: 'Swing mechanism — check slew bearing and swing function, no unusual noise or play', sortOrder: 18, appliesWhen: '{"category":"digger"}' },
+    { section: 'Digger (Excavator)', label: 'Grease points — lubricate pins and linkages if required', sortOrder: 19, appliesWhen: '{"category":"digger"}' },
+    // Dumper section — category: dumper
+    { section: 'Dumper', label: 'Body/skip and tipping mechanism — inspect for damage; check hydraulic rams and locking', sortOrder: 20, appliesWhen: '{"category":"dumper"}' },
+    { section: 'Dumper', label: 'Brakes and steering — visual check of brake components; test steering for excessive play', sortOrder: 21, appliesWhen: '{"category":"dumper"}' },
+    { section: 'Dumper', label: 'Wheels and wheel nuts — check for loose nuts, damage, or wear', sortOrder: 22, appliesWhen: '{"category":"dumper"}' },
+    { section: 'Dumper', label: 'Exhaust and engine compartment — check for damage or leaks; air filter condition', sortOrder: 23, appliesWhen: '{"category":"dumper"}' },
+    { section: 'Dumper', label: 'Load security — tailgate and body locks secure', sortOrder: 24, appliesWhen: '{"category":"dumper"}' },
+  ]
+
+  const machineryItemIds = machineryItems.map(() => uuidv4())
+  await db.insert(checkTemplateItems).values(
+    machineryItems.map((item, i) => ({
+      id: machineryItemIds[i],
+      templateId: IDS.tplMachineryWalkAround,
+      section: item.section,
+      label: item.label,
+      sortOrder: item.sortOrder,
+      appliesWhen: (item as any).appliesWhen ?? null,
+    })),
+  )
+  console.log('✓ Template 4: Machinery Walk-Around Daily (13 core + 6 digger + 5 dumper items)')
 
   // ── Sample Checks ──
 

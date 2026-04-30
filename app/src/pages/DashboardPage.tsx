@@ -160,7 +160,7 @@ export function DashboardPage() {
   const totalDefects = defectBreakdown.critical + defectBreakdown.high + defectBreakdown.medium + defectBreakdown.low
 
   const myKit = assets.filter((a) => a.assignedToId === user?.id)
-  const typeIcons: Record<string, typeof Package> = { vehicle: Truck, trailer: Container, plant: Wrench }
+  const typeIcons: Record<string, typeof Package> = { vehicle: Truck, trailer: Container, plant: Wrench, machinery: Wrench }
 
   // Determine if user is an operator (show simplified home)
   const isOperator = user?.role === 'operator'

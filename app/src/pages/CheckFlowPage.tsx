@@ -17,8 +17,10 @@ interface Asset {
   type: string
   registration: string | null
   weightClass: string | null
+  category: string | null
   siteId: string | null
   qrCode: string | null
+  assignedToId: string | null
 }
 
 interface Site { id: string; name: string }
@@ -86,6 +88,7 @@ export function CheckFlowPage() {
   const [signatureData, setSignatureData] = useState('')
   const [startGps, setStartGps] = useState<{ lat: number; lng: number; accuracy: number } | null>(null)
   const [assetSearch, setAssetSearch] = useState('')
+  const [showAllAssets, setShowAllAssets] = useState(false)
   const [completedCheckId, setCompletedCheckId] = useState<string | null>(null)
 
   // Fetch base data
@@ -125,6 +128,7 @@ export function CheckFlowPage() {
       try {
         const cond = JSON.parse(item.appliesWhen)
         if (cond.weight_class && selectedAsset?.weightClass !== cond.weight_class) return false
+        if (cond.category && selectedAsset?.category !== cond.category) return false
       } catch { /* show it if parse fails */ }
       return true
     })
@@ -272,15 +276,19 @@ export function CheckFlowPage() {
   }
 
   /* ─── Filtered asset list ─── */
+  const myKitAssets = useMemo(() => assets.filter((a) => a.assignedToId === user?.id), [assets, user])
+
   const filteredAssets = useMemo(() => {
-    if (!assetSearch) return assets.filter((a) => a.type !== 'archived')
+    const base = showAllAssets ? assets : (myKitAssets.length > 0 ? myKitAssets : assets)
+    const activeBase = base.filter((a) => a.type !== 'archived')
+    if (!assetSearch) return activeBase
     const q = assetSearch.toLowerCase()
-    return assets.filter((a) =>
+    return activeBase.filter((a) =>
       a.name.toLowerCase().includes(q) ||
       (a.registration || '').toLowerCase().includes(q) ||
       (a.qrCode || '').toLowerCase().includes(q),
     )
-  }, [assets, assetSearch])
+  }, [assets, myKitAssets, assetSearch, showAllAssets, user])
 
   /* ─── Render ─── */
   if (loading) {
@@ -333,6 +341,19 @@ export function CheckFlowPage() {
             value={assetSearch}
             onChange={(e) => setAssetSearch(e.target.value)}
           />
+          {myKitAssets.length > 0 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-chex-muted">
+                {showAllAssets ? 'Showing all company assets' : `Showing your ${myKitAssets.length} assigned asset${myKitAssets.length !== 1 ? 's' : ''}`}
+              </span>
+              <button
+                onClick={() => setShowAllAssets((v) => !v)}
+                className="text-chex-yellow hover:text-chex-yellow/80 font-medium cursor-pointer"
+              >
+                {showAllAssets ? 'Show my kit only' : 'Show all assets'}
+              </button>
+            </div>
+          )}
           <div className="space-y-1.5 max-h-[60vh] overflow-y-auto">
             {filteredAssets.map((asset) => (
               <Card
@@ -347,7 +368,7 @@ export function CheckFlowPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{asset.name}</p>
                   <div className="flex items-center gap-2 text-xs text-chex-muted mt-0.5">
-                    <Badge variant={asset.type === 'vehicle' ? 'blue' : asset.type === 'plant' ? 'yellow' : 'amber'}>
+                    <Badge variant={asset.type === 'vehicle' ? 'blue' : asset.type === 'machinery' ? 'green' : asset.type === 'plant' ? 'yellow' : 'amber'}>
                       {asset.type}
                     </Badge>
                     {asset.registration && <span>{asset.registration}</span>}
@@ -476,9 +497,27 @@ export function CheckFlowPage() {
           ))}
 
           <div className="flex justify-between pt-2">
-            <span className="text-xs text-chex-muted">
-              {itemResults.size} / {activeItems.length} answered
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-chex-muted">
+                {itemResults.size} / {activeItems.length} answered
+              </span>
+              <button
+                onClick={() => {
+                  setItemResults((prev) => {
+                    const next = new Map(prev)
+                    for (const item of activeItems) {
+                      if (!next.has(item.id)) {
+                        next.set(item.id, { templateItemId: item.id, result: 'pass', notes: '' })
+                      }
+                    }
+                    return next
+                  })
+                }}
+                className="text-xs text-chex-yellow hover:text-chex-yellow/80 font-medium cursor-pointer"
+              >
+                Mark all pass
+              </button>
+            </div>
             <Button
               variant="primary"
               size="sm"
