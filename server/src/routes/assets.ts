@@ -4,6 +4,10 @@ import { assets } from '../db/schema/index.js'
 import { eq } from 'drizzle-orm'
 import { v4 as uuidv4 } from 'uuid'
 import { requireAuth } from '../auth/middleware.js'
+import multer from 'multer'
+import { cloudinary } from '../lib/cloudinary.js'
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
 
 export const assetsRouter = Router()
 
@@ -98,13 +102,14 @@ assetsRouter.post('/', async (req, res) => {
 assetsRouter.patch('/:id', async (req, res) => {
   try {
     const {
-      siteId, assignedToId, name, plantId, serialNumber, registration,
+      type, siteId, assignedToId, name, plantId, serialNumber, registration,
       supplier, category, weightClass, calibrationDue,
       nextService, status, notes, photoUrl,
     } = req.body
     const [row] = await db
       .update(assets)
       .set({
+        ...(type !== undefined ? { type } : {}),
         siteId, assignedToId, name, plantId, serialNumber, registration,
         supplier, category, weightClass, calibrationDue,
         nextService, status, notes, photoUrl, updatedAt: new Date(),
@@ -152,5 +157,37 @@ assetsRouter.post('/:id/assign', async (req, res) => {
   } catch (err) {
     console.error('Error assigning asset:', err)
     res.status(500).json({ error: 'Failed to assign asset' })
+  }
+})
+
+// Upload photo (multipart/form-data, field: photo)
+assetsRouter.post('/:id/photo', requireAuth, upload.single('photo'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file provided' })
+  const assetId = req.params.id as string
+  try {
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: 'daily-chex',
+          resource_type: 'image',
+          transformation: [{ width: 1200, crop: 'limit', quality: 'auto:good' }],
+        },
+        (error, result) => {
+          if (error || !result) return reject(error || new Error('Upload failed'))
+          resolve(result as { secure_url: string })
+        },
+      ).end(req.file!.buffer)
+    })
+
+    const [row] = await db
+      .update(assets)
+      .set({ photoUrl: result.secure_url, updatedAt: new Date() })
+      .where(eq(assets.id, assetId))
+      .returning()
+    if (!row) return res.status(404).json({ error: 'Asset not found' })
+    res.json(row)
+  } catch (err) {
+    console.error('Error uploading photo:', err)
+    res.status(500).json({ error: 'Failed to upload photo' })
   }
 })

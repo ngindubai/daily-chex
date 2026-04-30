@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Truck, Container, Wrench, Package, MapPin, QrCode,
-  Calendar, Weight, Hash, Building, Loader2, ArrowRightLeft, CheckCircle, AlertTriangle, ClipboardCheck, User, UserCheck, Pencil,
+  Calendar, Weight, Hash, Building, Loader2, ArrowRightLeft, CheckCircle, AlertTriangle, ClipboardCheck, User, UserCheck, Pencil, Camera,
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { Card, Badge, Button } from '@/components/ui'
@@ -83,6 +83,8 @@ export function AssetDetailPage() {
   const [editCalibrationDue, setEditCalibrationDue] = useState('')
   const [editType, setEditType] = useState('')
   const [savingDates, setSavingDates] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   const fetchAsset = useCallback(async () => {
     if (!id || !token || !user) return
@@ -189,6 +191,25 @@ export function AssetDetailPage() {
     setSavingDates(false)
   }
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !token || !id) return
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append('photo', file)
+      const updated = await fetch(`/api/assets/${id}/photo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      }).then((r) => r.json())
+      setAsset((prev) => prev ? { ...prev, photoUrl: updated.photoUrl } : prev)
+    } catch { /* ignore */ }
+    setUploading(false)
+    // reset input so same file can be re-selected
+    if (photoInputRef.current) photoInputRef.current.value = ''
+  }
+
   return (
     <div className="p-4 lg:p-6 pb-24 lg:pb-6 space-y-4 max-w-2xl mx-auto">
       {/* Header */}
@@ -206,6 +227,44 @@ export function AssetDetailPage() {
             <Badge variant={statusVariant[asset.status] || 'default'}>{asset.status}</Badge>
           </div>
         </div>
+      </div>
+
+      {/* Photo */}
+      <div className="relative">
+        {asset.photoUrl ? (
+          <div className="relative rounded-[var(--radius-lg)] overflow-hidden aspect-video bg-chex-surface">
+            <img src={asset.photoUrl} alt={asset.name} className="w-full h-full object-cover" />
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              disabled={uploading}
+              className="absolute bottom-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-black/60 text-white text-xs font-medium hover:bg-black/80 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+              {uploading ? 'Uploading...' : 'Replace photo'}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => photoInputRef.current?.click()}
+            disabled={uploading}
+            className="w-full flex flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border-2 border-dashed border-chex-border bg-chex-surface/50 py-8 hover:border-chex-yellow/40 transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {uploading ? (
+              <Loader2 className="w-6 h-6 text-chex-yellow animate-spin" />
+            ) : (
+              <Camera className="w-6 h-6 text-chex-faint" />
+            )}
+            <span className="text-sm text-chex-muted">{uploading ? 'Uploading...' : 'Add a photo'}</span>
+          </button>
+        )}
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handlePhotoUpload}
+        />
       </div>
 
       {/* QR Code */}
