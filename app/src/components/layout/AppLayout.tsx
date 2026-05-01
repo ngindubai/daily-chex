@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   LogOut,
+  Zap,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -22,6 +23,7 @@ const mainNav = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/map', icon: MapPin, label: 'Map' },
   { to: '/scan', icon: ScanLine, label: 'Scan' },
+  { to: '/quick-check', icon: Zap, label: 'Quick Check' },
   { to: '/checks', icon: ClipboardCheck, label: 'Checks' },
   { to: '/tasks', icon: ClipboardList, label: 'Tasks' },
   { to: '/defects', icon: AlertTriangle, label: 'Defects' },
@@ -32,9 +34,9 @@ const mainNav = [
 
 const mobileNav = [
   { to: '/', icon: LayoutDashboard, label: 'Home' },
+  { to: '/quick-check', icon: Zap, label: 'Quick' },
   { to: '/scan', icon: ScanLine, label: 'Scan' },
   { to: '/checks', icon: ClipboardCheck, label: 'Checks' },
-  { to: '/map', icon: MapPin, label: 'Map' },
   { to: '/assets', icon: Package, label: 'More' },
 ]
 

@@ -14,6 +14,7 @@ import { defectsRouter } from './routes/defects.js'
 import { dashboardRouter } from './routes/dashboard.js'
 import { taskAssignmentsRouter } from './routes/taskAssignments.js'
 import { authRouter } from './routes/auth.js'
+import { adminRouter } from './routes/admin.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -48,6 +49,7 @@ app.use('/api/checks', checksRouter)
 app.use('/api/defects', defectsRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/task-assignments', taskAssignmentsRouter)
+app.use('/api/admin', adminRouter)
 
 // Serve React frontend (production)
 const clientDist = path.resolve(__dirname, '../../app/dist')

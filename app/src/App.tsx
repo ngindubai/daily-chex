@@ -17,6 +17,8 @@ import { PeoplePage } from '@/pages/PeoplePage'
 import { TasksPage } from '@/pages/TasksPage'
 import { DesignGuidePage } from '@/pages/DesignGuidePage'
 import { LoginPage } from '@/pages/LoginPage'
+import { QuickCheckPage } from '@/pages/QuickCheckPage'
+import { AdminPage } from '@/pages/AdminPage'
 import { Loader2 } from 'lucide-react'
 
 function ProtectedRoutes() {
@@ -50,6 +52,7 @@ function ProtectedRoutes() {
         <Route path="people" element={<PeoplePage />} />
         <Route path="tasks" element={<TasksPage />} />
         <Route path="design-guide" element={<DesignGuidePage />} />
+        <Route path="quick-check" element={<QuickCheckPage />} />
       </Route>
     </Routes>
   )
@@ -74,6 +77,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginRoute />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/*" element={<ProtectedRoutes />} />
         </Routes>
       </AuthProvider>

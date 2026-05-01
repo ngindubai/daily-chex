@@ -186,3 +186,76 @@ checksRouter.post('/:id/items', async (req, res) => {
     res.status(500).json({ error: 'Failed to add check items' })
   }
 })
+
+// Quick batch check — create + complete a single-item check per asset in one call
+// Body: { entries: [{ assetId, templateItemId, templateId, siteId, teamId, result, overallResult }] }
+// Used by the Quick Check dashboard
+checksRouter.post('/quick-batch', async (req, res) => {
+  try {
+    const { companyId, personId, entries } = req.body as {
+      companyId: string
+      personId: string
+      entries: Array<{
+        assetId: string
+        checkTemplateId: string
+        templateItemId: string
+        siteId?: string
+        teamId?: string
+        result: 'pass' | 'fail'
+        overallResult: 'pass' | 'fail'
+      }>
+    }
+    if (!companyId || !personId || !Array.isArray(entries) || entries.length === 0) {
+      return res.status(400).json({ error: 'companyId, personId, and entries are required' })
+    }
+
+    const created: string[] = []
+    for (const e of entries) {
+      // 1. Create check
+      const [check] = await db
+        .insert(checks)
+        .values({
+          companyId,
+          assetId: e.assetId,
+          personId,
+          siteId: e.siteId,
+          teamId: e.teamId,
+          checkTemplateId: e.checkTemplateId,
+        })
+        .returning()
+
+      // 2. Add single summary item
+      await db.insert(checkItems).values({
+        checkId: check.id,
+        templateItemId: e.templateItemId,
+        result: e.result,
+      })
+
+      // 3. Complete
+      await db
+        .update(checks)
+        .set({
+          status: 'completed',
+          overallResult: e.overallResult,
+          completedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(checks.id, check.id))
+
+      // 4. If fail, flag asset
+      if (e.overallResult === 'fail') {
+        await db
+          .update(assets)
+          .set({ status: 'defective', updatedAt: new Date() })
+          .where(eq(assets.id, e.assetId))
+      }
+
+      created.push(check.id)
+    }
+
+    res.status(201).json({ created, count: created.length })
+  } catch (err) {
+    console.error('Error in quick batch check:', err)
+    res.status(500).json({ error: 'Failed to submit quick checks' })
+  }
+})
