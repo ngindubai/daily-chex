@@ -84,6 +84,7 @@ export function AssetDetailPage() {
   const [editType, setEditType] = useState('')
   const [savingDates, setSavingDates] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
 
   const fetchAsset = useCallback(async () => {
@@ -195,16 +196,26 @@ export function AssetDetailPage() {
     const file = e.target.files?.[0]
     if (!file || !token || !id) return
     setUploading(true)
+    setPhotoError(null)
     try {
       const form = new FormData()
       form.append('photo', file)
-      const updated = await fetch(`/api/assets/${id}/photo`, {
+      const res = await fetch(`/api/assets/${id}/photo`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: form,
-      }).then((r) => r.json())
-      setAsset((prev) => prev ? { ...prev, photoUrl: updated.photoUrl } : prev)
-    } catch { /* ignore */ }
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setPhotoError(body.error || `Upload failed (${res.status})`)
+      } else if (body.photoUrl) {
+        setAsset((prev) => prev ? { ...prev, photoUrl: body.photoUrl } : prev)
+      } else {
+        setPhotoError('Server returned no photo URL. Check Cloudinary keys are configured on the server.')
+      }
+    } catch (err: any) {
+      setPhotoError(err?.message || 'Upload failed — check your connection')
+    }
     setUploading(false)
     // reset input so same file can be re-selected
     if (photoInputRef.current) photoInputRef.current.value = ''
@@ -265,6 +276,11 @@ export function AssetDetailPage() {
           className="hidden"
           onChange={handlePhotoUpload}
         />
+        {photoError && (
+          <p className="mt-2 text-xs text-red-400 bg-red-500/5 border border-red-500/20 rounded-[var(--radius-md)] px-3 py-2">
+            {photoError}
+          </p>
+        )}
       </div>
 
       {/* QR Code */}

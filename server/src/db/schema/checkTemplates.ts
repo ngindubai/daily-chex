@@ -18,7 +18,8 @@ export const checkTemplates = pgTable('check_templates', {
   companyId: uuid('company_id').references(() => companies.id), // null = global
   name: text('name').notNull(),
   slug: text('slug'),
-  assetType: text('asset_type').notNull(), // vehicle, trailer, plant
+  assetType: text('asset_type').notNull(), // vehicle, trailer, plant, machinery
+  assetCategory: text('asset_category'), // optional sub-category match (digger, dumper, etc.)
   checkFrequency: checkFrequencyEnum('check_frequency').notNull(),
   description: text('description'),
   version: integer('version').notNull().default(1),

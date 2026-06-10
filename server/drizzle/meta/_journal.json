@@ -36,6 +36,13 @@
       "when": 1777546133858,
       "tag": "0004_ordinary_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781098792976,
+      "tag": "0005_faulty_captain_midlands",
+      "breakpoints": true
     }
   ]
 }

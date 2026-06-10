@@ -1,0 +1,1 @@
+ALTER TABLE "check_templates" ADD COLUMN "asset_category" text;

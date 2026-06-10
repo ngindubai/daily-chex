@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Check, X, Minus, Loader2, Zap, ArrowLeft, ChevronRight,
+  Check, X, Loader2, Zap, ArrowLeft, ChevronRight,
   Truck, Container, Wrench, Package,
 } from 'lucide-react'
 import { Card, Badge, Button } from '@/components/ui'
@@ -18,12 +18,14 @@ interface Asset {
   teamId?: string | null
   assignedToId: string | null
   status: string
+  photoUrl: string | null
 }
 
 interface Template {
   id: string
   name: string
   assetType: string
+  assetCategory: string | null
   checkFrequency: string
   items: Array<{ id: string; label: string; section: string | null; sortOrder: number }>
 }
@@ -70,7 +72,7 @@ export function QuickCheckPage() {
       )
       setTemplates(fullTpls)
 
-      // Only show active, assigned-to-me assets that have a daily template
+      // Show every active asset assigned to me — regardless of template availability
       const myAssets = allAssets.filter(
         (a) => a.status === 'active' && a.assignedToId === user.id
       )
@@ -81,21 +83,23 @@ export function QuickCheckPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Match each asset to a daily template
+  // Match each asset to the most specific daily template available.
+  // Priority: 1) assetType + assetCategory match, 2) assetType match.
   const assetTemplateMap = useMemo(() => {
-    const map = new Map<string, Template | null>()
+    const map = new Map<string, Template>()
     for (const a of assets) {
-      const tpl = templates.find((t) => t.assetType === a.type) || null
-      if (tpl) map.set(a.id, tpl)
+      const exact = templates.find(
+        (t) => t.assetType === a.type && t.assetCategory && t.assetCategory === a.category,
+      )
+      const general = templates.find((t) => t.assetType === a.type && !t.assetCategory)
+      const tpl = exact || general
+      if (tpl && tpl.items && tpl.items.length > 0) map.set(a.id, tpl)
     }
     return map
   }, [assets, templates])
 
-  // Only show assets that have a matching daily template
-  const checkableAssets = useMemo(
-    () => assets.filter((a) => assetTemplateMap.has(a.id)),
-    [assets, assetTemplateMap]
-  )
+  // Show ALL assigned assets — even those without a template (they show as "no daily check defined")
+  const checkableAssets = useMemo(() => assets, [assets])
 
   const setResult = (assetId: string, r: QuickResult) => {
     setResults((prev) => {
@@ -106,14 +110,13 @@ export function QuickCheckPage() {
   }
 
   const markedCount = Array.from(results.values()).filter(Boolean).length
-  const allMarked = checkableAssets.length > 0 && markedCount === checkableAssets.length
 
   const handleSubmit = async () => {
     if (!user || !token || markedCount === 0) return
     setSubmitting(true)
 
     const entries = checkableAssets
-      .filter((a) => results.get(a.id))
+      .filter((a) => results.get(a.id) && assetTemplateMap.has(a.id))
       .map((a) => {
         const tpl = assetTemplateMap.get(a.id)!
         const firstItem = tpl.items[0]
@@ -127,6 +130,11 @@ export function QuickCheckPage() {
           overallResult: r,
         }
       })
+
+    if (entries.length === 0) {
+      setSubmitting(false)
+      return
+    }
 
     try {
       await api('/checks/quick-batch', {
@@ -195,8 +203,8 @@ export function QuickCheckPage() {
       {checkableAssets.length === 0 ? (
         <Card className="text-center py-10">
           <Zap className="w-8 h-8 text-chex-faint mx-auto mb-2" />
-          <p className="text-sm text-chex-muted">No assets with daily check templates found.</p>
-          <p className="text-xs text-chex-faint mt-1">Only vehicles and machinery have daily templates.</p>
+          <p className="text-sm text-chex-muted">No assets assigned to you.</p>
+          <p className="text-xs text-chex-faint mt-1">Ask your manager to assign you some kit.</p>
         </Card>
       ) : (
         <>
@@ -205,7 +213,9 @@ export function QuickCheckPage() {
             <button
               onClick={() => {
                 const next = new Map<string, QuickResult>()
-                checkableAssets.forEach((a) => next.set(a.id, 'pass'))
+                checkableAssets.forEach((a) => {
+                  if (assetTemplateMap.has(a.id)) next.set(a.id, 'pass')
+                })
                 setResults(next)
               }}
               className="text-xs text-chex-yellow hover:text-chex-yellow/80 font-medium cursor-pointer"
@@ -220,6 +230,7 @@ export function QuickCheckPage() {
               const r = results.get(asset.id)
               const Icon = typeIcon[asset.type] || Package
               const tpl = assetTemplateMap.get(asset.id)
+              const hasTpl = !!tpl
 
               return (
                 <div
@@ -243,8 +254,10 @@ export function QuickCheckPage() {
                         {asset.registration && (
                           <span className="text-xs text-chex-faint">{asset.registration}</span>
                         )}
-                        {tpl && (
+                        {tpl ? (
                           <span className="text-xs text-chex-faint truncate hidden sm:block">· {tpl.name}</span>
+                        ) : (
+                          <span className="text-xs text-amber-400/80 truncate">· no daily template</span>
                         )}
                       </div>
                     </div>
@@ -252,21 +265,27 @@ export function QuickCheckPage() {
                     {/* Pass / Fail / Clear buttons */}
                     <div className="flex items-center gap-1 shrink-0">
                       <button
-                        onClick={() => setResult(asset.id, r === 'pass' ? null : 'pass')}
-                        className={`h-8 w-8 rounded-[var(--radius-md)] border flex items-center justify-center transition-colors cursor-pointer ${
-                          r === 'pass'
-                            ? 'bg-green-500/20 border-green-500/40 text-green-400'
-                            : 'bg-chex-surface border-chex-border text-chex-muted hover:border-green-500/30 hover:text-green-400'
+                        onClick={() => hasTpl && setResult(asset.id, r === 'pass' ? null : 'pass')}
+                        disabled={!hasTpl}
+                        className={`h-8 w-8 rounded-[var(--radius-md)] border flex items-center justify-center transition-colors ${
+                          !hasTpl
+                            ? 'bg-chex-surface border-chex-border text-chex-faint opacity-40 cursor-not-allowed'
+                            : r === 'pass'
+                              ? 'bg-green-500/20 border-green-500/40 text-green-400 cursor-pointer'
+                              : 'bg-chex-surface border-chex-border text-chex-muted hover:border-green-500/30 hover:text-green-400 cursor-pointer'
                         }`}
                       >
                         <Check className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => setResult(asset.id, r === 'fail' ? null : 'fail')}
-                        className={`h-8 w-8 rounded-[var(--radius-md)] border flex items-center justify-center transition-colors cursor-pointer ${
-                          r === 'fail'
-                            ? 'bg-red-500/20 border-red-500/40 text-red-400'
-                            : 'bg-chex-surface border-chex-border text-chex-muted hover:border-red-500/30 hover:text-red-400'
+                        onClick={() => hasTpl && setResult(asset.id, r === 'fail' ? null : 'fail')}
+                        disabled={!hasTpl}
+                        className={`h-8 w-8 rounded-[var(--radius-md)] border flex items-center justify-center transition-colors ${
+                          !hasTpl
+                            ? 'bg-chex-surface border-chex-border text-chex-faint opacity-40 cursor-not-allowed'
+                            : r === 'fail'
+                              ? 'bg-red-500/20 border-red-500/40 text-red-400 cursor-pointer'
+                              : 'bg-chex-surface border-chex-border text-chex-muted hover:border-red-500/30 hover:text-red-400 cursor-pointer'
                         }`}
                       >
                         <X className="w-3.5 h-3.5" />

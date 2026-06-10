@@ -20,6 +20,7 @@ interface Asset {
   qrCode: string | null
   nextService: string | null
   calibrationDue: string | null
+  photoUrl: string | null
 }
 
 interface Site {
@@ -32,6 +33,14 @@ interface Person {
   firstName: string
   lastName: string
   role: string
+}
+
+interface CheckRow {
+  id: string
+  assetId: string
+  status: string
+  completedAt: string | null
+  overallResult: string | null
 }
 
 const typeIcon: Record<string, typeof Package> = {
@@ -59,6 +68,7 @@ export function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [sites, setSites] = useState<Site[]>([])
   const [people, setPeople] = useState<Person[]>([])
+  const [checksToday, setChecksToday] = useState<Map<string, 'pass' | 'fail'>>(new Map())
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
@@ -88,8 +98,25 @@ export function AssetsPage() {
       api<Asset[]>(`/assets?companyId=${user.companyId}`, { token }),
       api<Site[]>(`/sites?companyId=${user.companyId}`, { token }),
       api<Person[]>(`/people?companyId=${user.companyId}`, { token }),
+      api<CheckRow[]>(`/checks?companyId=${user.companyId}`, { token }),
     ])
-      .then(([a, s, p]) => { setAssets(a); setSites(s); setPeople(p) })
+      .then(([a, s, p, c]) => {
+        setAssets(a)
+        setSites(s)
+        setPeople(p)
+        // Build map of assetId -> result for checks completed today
+        const today = new Date()
+        const todayStr = today.toISOString().slice(0, 10)
+        const map = new Map<string, 'pass' | 'fail'>()
+        for (const ck of c) {
+          if (ck.status !== 'completed' || !ck.completedAt) continue
+          if (ck.completedAt.slice(0, 10) !== todayStr) continue
+          const r = ck.overallResult === 'fail' ? 'fail' : 'pass'
+          // Latest completed wins; checks list is ordered desc by createdAt server-side
+          if (!map.has(ck.assetId)) map.set(ck.assetId, r)
+        }
+        setChecksToday(map)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [user, token])
@@ -357,9 +384,18 @@ export function AssetsPage() {
                 className="flex items-center gap-4 cursor-pointer hover:border-chex-yellow/20 transition-colors"
                 onClick={() => navigate(`/assets/${asset.id}`)}
               >
-                <div className="h-10 w-10 rounded-[var(--radius-md)] bg-chex-raised flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5 text-chex-muted" />
-                </div>
+                {asset.photoUrl ? (
+                  <img
+                    src={asset.photoUrl}
+                    alt={asset.name}
+                    className="h-12 w-12 rounded-[var(--radius-md)] object-cover shrink-0 border border-chex-border"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-[var(--radius-md)] bg-chex-raised flex items-center justify-center shrink-0">
+                    <Icon className="h-5 w-5 text-chex-muted" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-chex-text truncate">{asset.name}</p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -380,7 +416,16 @@ export function AssetsPage() {
                   </div>
                 </div>
                 <div className="text-right shrink-0 flex items-center gap-3">
-                  <Badge variant={statusVariant[asset.status] || 'default'}>{asset.status}</Badge>
+                  {(() => {
+                    // For active assets, show daily check status (green = checked today pass, red = not done / fail)
+                    if (asset.status === 'active') {
+                      const t = checksToday.get(asset.id)
+                      if (t === 'pass') return <Badge variant="green">Checked</Badge>
+                      if (t === 'fail') return <Badge variant="red">Failed today</Badge>
+                      return <Badge variant="red">Not checked</Badge>
+                    }
+                    return <Badge variant={statusVariant[asset.status] || 'default'}>{asset.status}</Badge>
+                  })()}
                   {asset.qrCode && (
                     <span className="hidden sm:flex items-center gap-1 text-xs text-chex-faint">
                       <QrCode className="w-3 h-3" />{asset.qrCode}

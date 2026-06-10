@@ -61,7 +61,7 @@ interface DefectBreakdown {
   low: number
 }
 
-interface Asset { id: string; name: string; type: string; assignedToId: string | null; status: string }
+interface Asset { id: string; name: string; type: string; assignedToId: string | null; status: string; photoUrl?: string | null }
 interface Person { id: string; name: string }
 interface PendingTask {
   id: string
@@ -72,6 +72,13 @@ interface PendingTask {
   notes: string | null
   status: string
   createdAt: string
+}
+interface MinimalCheck {
+  id: string
+  assetId: string
+  status: string
+  completedAt: string | null
+  overallResult: string | null
 }
 
 const stagger = {
@@ -108,6 +115,7 @@ export function DashboardPage() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [people, setPeople] = useState<Person[]>([])
   const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([])
+  const [checksTodayMap, setChecksTodayMap] = useState<Map<string, 'pass' | 'fail'>>(new Map())
   const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(async () => {
@@ -137,6 +145,21 @@ export function DashboardPage() {
         )
         setPendingTasks(tasks)
       } catch { /* task API may not exist yet */ }
+
+      // Build today's checks map (asset -> latest pass/fail result for today)
+      try {
+        const allChecks = await api<MinimalCheck[]>(`/checks?companyId=${cid}`, { token })
+        const today = new Date().toISOString().slice(0, 10)
+        const map = new Map<string, 'pass' | 'fail'>()
+        for (const ck of allChecks) {
+          if (ck.status !== 'completed' || !ck.completedAt) continue
+          if (ck.completedAt.slice(0, 10) !== today) continue
+          if (!map.has(ck.assetId)) {
+            map.set(ck.assetId, ck.overallResult === 'fail' ? 'fail' : 'pass')
+          }
+        }
+        setChecksTodayMap(map)
+      } catch { /* ignore */ }
     } catch { /* ignore */ }
     setLoading(false)
   }, [user, token])
@@ -178,30 +201,32 @@ export function DashboardPage() {
           <div>
             <h2 className="text-sm font-semibold text-chex-text mb-3 uppercase tracking-wider flex items-center gap-2">
               <Wrench className="h-4 w-4 text-chex-yellow" />
-              My Kit
+              My Kit ({myKit.length})
             </h2>
-            <div className="space-y-2">
-              {myKit.map((a) => {
-                const KitIcon = typeIcons[a.type] || Package
-                return (
-                  <Card
-                    key={a.id}
-                    className="cursor-pointer hover:border-chex-yellow/20 transition-colors"
-                    onClick={() => navigate(`/assets/${a.id}`)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-[var(--radius-md)] bg-chex-yellow/10 flex items-center justify-center shrink-0">
-                        <KitIcon className="w-4 h-4 text-chex-yellow" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-chex-text truncate">{a.name}</p>
-                        <p className="text-xs text-chex-muted capitalize">{a.type}</p>
-                      </div>
-                      <Badge variant={a.status === 'active' ? 'green' : a.status === 'defective' ? 'red' : 'default'}>{a.status}</Badge>
-                    </div>
-                  </Card>
-                )
-              })}
+            <div className="flex gap-2">
+              <select
+                value=""
+                onChange={(e) => { if (e.target.value) navigate(`/assets/${e.target.value}`) }}
+                className="flex-1 h-11 bg-chex-surface border border-chex-border rounded-[var(--radius-md)] text-sm text-chex-text px-3 hover:border-chex-muted focus:border-chex-yellow focus:ring-1 focus:ring-chex-yellow/30 outline-none cursor-pointer"
+              >
+                <option value="" disabled>Select an asset to view…</option>
+                {myKit.map((a) => {
+                  const t = checksTodayMap.get(a.id)
+                  const tag = a.status !== 'active'
+                    ? ` — ${a.status}`
+                    : t === 'pass' ? ' — ✓ checked today'
+                    : t === 'fail' ? ' — ✗ failed today'
+                    : ' — not checked'
+                  return <option key={a.id} value={a.id}>{a.name}{tag}</option>
+                })}
+              </select>
+              <button
+                onClick={() => navigate('/quick-check')}
+                className="h-11 px-4 bg-chex-yellow text-chex-black text-sm font-semibold rounded-[var(--radius-md)] hover:bg-chex-yellow/90 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <ClipboardCheck className="w-4 h-4" />
+                Quick Check
+              </button>
             </div>
           </div>
         )}
@@ -333,30 +358,32 @@ export function DashboardPage() {
         <div>
           <h2 className="text-sm font-semibold text-chex-text mb-3 uppercase tracking-wider flex items-center gap-2">
             <Wrench className="h-4 w-4 text-chex-yellow" />
-            Your Assigned Kit
+            Your Assigned Kit ({myKit.length})
           </h2>
-          <div className="grid lg:grid-cols-3 gap-2">
-            {myKit.map((a) => {
-              const KitIcon = typeIcons[a.type] || Package
-              return (
-                <Card
-                  key={a.id}
-                  className="cursor-pointer hover:border-chex-yellow/20 transition-colors"
-                  onClick={() => navigate(`/assets/${a.id}`)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-[var(--radius-md)] bg-chex-yellow/10 flex items-center justify-center shrink-0">
-                      <KitIcon className="w-4 h-4 text-chex-yellow" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-chex-text truncate">{a.name}</p>
-                      <p className="text-xs text-chex-muted capitalize">{a.type}</p>
-                    </div>
-                    <Badge variant={a.status === 'active' ? 'green' : a.status === 'defective' ? 'red' : 'default'}>{a.status}</Badge>
-                  </div>
-                </Card>
-              )
-            })}
+          <div className="flex gap-2 max-w-xl">
+            <select
+              value=""
+              onChange={(e) => { if (e.target.value) navigate(`/assets/${e.target.value}`) }}
+              className="flex-1 h-10 bg-chex-surface border border-chex-border rounded-[var(--radius-md)] text-sm text-chex-text px-3 hover:border-chex-muted focus:border-chex-yellow focus:ring-1 focus:ring-chex-yellow/30 outline-none cursor-pointer"
+            >
+              <option value="" disabled>Select an asset to view…</option>
+              {myKit.map((a) => {
+                const t = checksTodayMap.get(a.id)
+                const tag = a.status !== 'active'
+                  ? ` — ${a.status}`
+                  : t === 'pass' ? ' — ✓ checked today'
+                  : t === 'fail' ? ' — ✗ failed today'
+                  : ' — not checked'
+                return <option key={a.id} value={a.id}>{a.name}{tag}</option>
+              })}
+            </select>
+            <button
+              onClick={() => navigate('/quick-check')}
+              className="h-10 px-4 bg-chex-yellow text-chex-black text-sm font-semibold rounded-[var(--radius-md)] hover:bg-chex-yellow/90 transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              Quick Check
+            </button>
           </div>
         </div>
       )}
